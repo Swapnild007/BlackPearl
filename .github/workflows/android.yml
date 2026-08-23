@@ -72,26 +72,20 @@ jobs:
             echo "Installing BlackPearl APK..."
             adb install -r app/build/outputs/apk/debug/app-debug.apk
 
+            echo "Verifying package registration..."
+            adb shell pm path com.blackpearl.lab
+
             echo "Launching MainActivity..."
             adb shell am force-stop com.blackpearl.lab
-            adb shell am start -n com.blackpearl.lab/.MainActivity
-            sleep 5
+            START_OUTPUT=$(adb shell am start -W -n com.blackpearl.lab/.MainActivity 2>&1)
+            echo "$START_OUTPUT"
+            echo "$START_OUTPUT" | grep -q 'Status: ok'
 
-            echo "Checking application process..."
-            adb shell pidof com.blackpearl.lab
-
-            echo "Checking foreground activity..."
+            echo "Checking activity after launch..."
+            sleep 3
             adb shell dumpsys activity activities | grep -q 'com.blackpearl.lab/.MainActivity'
 
-            echo "Checking application is not crashing..."
-            if adb shell dumpsys activity processes | grep -q 'com.blackpearl.lab.*hasActivities=true'; then
-              echo "BlackPearl activity is alive"
-            else
-              echo "BlackPearl activity state could not be confirmed; checking package process"
-              adb shell pidof com.blackpearl.lab
-            fi
-
-            echo "Checking key UI text through lightweight log-free package launch..."
-            adb shell dumpsys package com.blackpearl.lab | grep -q 'com.blackpearl.lab'
+            echo "Checking package remains installed..."
+            adb shell pm path com.blackpearl.lab | grep -q 'base.apk'
 
             echo "Phase 2 Android launch smoke test passed"
