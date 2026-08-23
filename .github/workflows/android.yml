@@ -67,31 +67,51 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -noaudio -no-boot-anim -gpu swiftshader_indirect -no-snapshot
           script: |
-            set -e
+            set -eu
+
+            PACKAGE="com.blackpearl.lab"
+            ACTIVITY="${PACKAGE}/.MainActivity"
+            APK="app/build/outputs/apk/debug/app-debug.apk"
 
             echo "Installing BlackPearl APK..."
-            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb install -r "$APK"
 
             echo "Verifying package registration..."
-            PACKAGE_PATH=$(adb shell pm path com.blackpearl.lab | tr -d '\r')
-            echo "$PACKAGE_PATH"
-            test -n "$PACKAGE_PATH"
-            echo "$PACKAGE_PATH" | grep -Fq 'base.apk'
+            PACKAGE_LINE="$(adb shell pm list packages | tr -d '\r' | grep -Fx "package:${PACKAGE}" || true)"
+            echo "Package result: ${PACKAGE_LINE:-<not found>}"
+            test "$PACKAGE_LINE" = "package:${PACKAGE}"
+
+            echo "Verifying installed APK path..."
+            APK_PATH="$(adb shell cmd package path "$PACKAGE" 2>/dev/null | tr -d '\r' | head -n 1 || true)"
+            echo "APK path: ${APK_PATH:-<not reported>}"
+            test -n "$APK_PATH"
+            echo "$APK_PATH" | grep -Fq 'base.apk'
 
             echo "Launching MainActivity..."
-            adb shell am force-stop com.blackpearl.lab || true
-            adb shell am start -n com.blackpearl.lab/.MainActivity
+            adb shell am force-stop "$PACKAGE" || true
+            START_OUTPUT="$(adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
+            echo "$START_OUTPUT"
+            echo "$START_OUTPUT" | grep -Fq 'Status: ok'
 
             echo "Waiting for application process..."
-            sleep 3
-            PID=$(adb shell pidof com.blackpearl.lab 2>/dev/null | tr -d '\r' || true)
-            echo "PID: $PID"
+            PID=""
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              PID="$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r' || true)"
+              if [ -n "$PID" ]; then
+                break
+              fi
+              sleep 1
+            done
+            echo "PID: ${PID:-<not running>}"
             test -n "$PID"
 
-            echo "Verifying activity/package state..."
-            adb shell dumpsys activity activities > /tmp/activity.txt
-            adb shell dumpsys package com.blackpearl.lab > /tmp/package.txt
-            grep -Fq 'com.blackpearl.lab' /tmp/activity.txt
-            grep -Fq 'com.blackpearl.lab/.MainActivity' /tmp/package.txt
+            echo "Verifying foreground activity..."
+            TOP_ACTIVITY="$(adb shell dumpsys activity top 2>/dev/null | tr -d '\r' || true)"
+            echo "$TOP_ACTIVITY" | grep -Fq "$ACTIVITY"
+
+            echo "Verifying package/activity registration..."
+            adb shell dumpsys package "$PACKAGE" > /tmp/package.txt
+            grep -Fq "$PACKAGE" /tmp/package.txt
+            grep -Fq '.MainActivity' /tmp/package.txt
 
             echo "Phase 2 Android launch smoke test passed"
