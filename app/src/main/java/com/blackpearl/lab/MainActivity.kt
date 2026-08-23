@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.view.Gravity
@@ -14,8 +15,8 @@ import android.view.View
 import android.widget.*
 import java.net.HttpURLConnection
 import java.net.InetAddress
-import java.net.URL
 import java.net.URI
+import java.net.URL
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,6 +25,8 @@ import javax.crypto.spec.SecretKeySpec
 import android.util.Base64
 import java.net.URLEncoder
 import java.net.URLDecoder
+import org.json.JSONArray
+import org.json.JSONObject
 
 class MainActivity : Activity() {
     private val bg = Color.rgb(5, 8, 12)
@@ -31,10 +34,13 @@ class MainActivity : Activity() {
     private val surface2 = Color.rgb(24, 31, 41)
     private val cyan = Color.rgb(45, 220, 218)
     private val green = Color.rgb(80, 230, 160)
+    private val red = Color.rgb(255, 105, 105)
+    private val amber = Color.rgb(255, 196, 90)
     private val white = Color.WHITE
     private val muted = Color.rgb(165, 175, 188)
     private val history = ArrayDeque<View>()
     private var current: View? = null
+    private val prefs: SharedPreferences by lazy { getSharedPreferences("blackpearl_data", Context.MODE_PRIVATE) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,9 +51,8 @@ class MainActivity : Activity() {
 
     override fun onBackPressed() {
         if (history.isNotEmpty()) {
-            val previous = history.removeLast()
-            current = previous
-            setContentView(previous)
+            current = history.removeLast()
+            setContentView(current)
         } else {
             super.onBackPressed()
         }
@@ -87,7 +92,7 @@ class MainActivity : Activity() {
         body.addView(card("#", "CRYPTO / HASH", "SHA, Base64 and AES local utilities") { crypto() })
         body.addView(section("LABS & REPORTING"))
         body.addView(card("⚗", "CTF LABS", "Controlled local challenges") { labs() })
-        body.addView(card("!", "FINDINGS", "Severity tracking and evidence notes") { findings() })
+        body.addView(card("!", "FINDINGS", "Persistent severity tracking and evidence") { findings() })
         body.addView(card("▤", "REPORTS", "Generate a local security report") { reports() })
         body.addView(card("⚙", "SETTINGS", "Safety scope and application settings") { settings() })
         scroll.addView(body)
@@ -138,7 +143,7 @@ class MainActivity : Activity() {
         sub.text = "A practical white-hat security workstation for Android."
         sub.setTextColor(muted)
         sub.textSize = 15f
-        box.addView(sub, LinearLayout.LayoutParams(-1, -2))
+        box.addView(sub)
         val line = TextView(this)
         line.text = "● LOCAL-FIRST     •     ● AUTHORIZED     •     ● AUDITABLE"
         line.setTextColor(green)
@@ -148,9 +153,9 @@ class MainActivity : Activity() {
         return box
     }
 
-    private fun section(s: String): View {
+    private fun section(text: String): View {
         val t = TextView(this)
-        t.text = s
+        t.text = text
         t.setTextColor(muted)
         t.textSize = 12f
         t.typeface = Typeface.DEFAULT_BOLD
@@ -201,7 +206,7 @@ class MainActivity : Activity() {
     private fun recon() {
         val body = baseBody()
         body.addView(title("LOCAL RECON"))
-        body.addView(info("Scope is intentionally restricted to this device and localhost. No remote scanning is performed."))
+        body.addView(info("Scope is restricted to this device and localhost. No remote scanning is performed."))
         val host = EditText(this)
         host.hint = "Hostname or IP (default: localhost)"
         styleInput(host)
@@ -223,7 +228,7 @@ class MainActivity : Activity() {
                     }
                     runOnUiThread { out.text = text }
                 } catch (e: Exception) {
-                    runOnUiThread { out.text = "ERROR\n${e.message}" }
+                    runOnUiThread { out.text = "ERROR\n${e.message ?: "Resolution failed"}" }
                 }
             }.start()
         })
@@ -237,7 +242,7 @@ class MainActivity : Activity() {
         val out = output()
         body.addView(out)
         body.addView(button("REFRESH STATUS") { out.text = networkStatus() })
-        body.addView(button("CHECK LOCALHOST") {
+        body.addView(button("CHECK LOCALHOST:8080") {
             Thread {
                 try {
                     val start = System.currentTimeMillis()
@@ -246,7 +251,7 @@ class MainActivity : Activity() {
                     socket.close()
                     val ms = System.currentTimeMillis() - start
                     runOnUiThread { out.text = "127.0.0.1:8080\nReachable: YES\nElapsed: ${ms}ms" }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     runOnUiThread { out.text = "127.0.0.1:8080\nReachable: NO\nNo service is listening on port 8080." }
                 }
             }.start()
@@ -272,7 +277,7 @@ class MainActivity : Activity() {
     private fun webSecurity() {
         val body = baseBody()
         body.addView(title("LOCAL HTTP INSPECTOR"))
-        body.addView(info("Safe mode: requests are allowed only to localhost. Useful for testing a local web server you control."))
+        body.addView(info("Safe mode: requests are allowed only to localhost."))
         val input = EditText(this)
         input.hint = "http://127.0.0.1:8080/"
         styleInput(input)
@@ -302,10 +307,10 @@ class MainActivity : Activity() {
                         c.disconnect()
                         runOnUiThread { out.text = text }
                     } catch (e: Exception) {
-                        runOnUiThread { out.text = "ERROR\n${e.message}" }
+                        runOnUiThread { out.text = "ERROR\n${e.message ?: "Request failed"}" }
                     }
                 }.start()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 out.text = "INVALID URL\nUse http://127.0.0.1:PORT/"
             }
         })
@@ -315,18 +320,17 @@ class MainActivity : Activity() {
     private fun androidSecurity() {
         val body = baseBody()
         body.addView(title("ANDROID SECURITY"))
-        body.addView(info("Local posture checks. This module does not attempt privilege escalation or bypass Android security controls."))
+        body.addView(info("Local posture checks. No privilege escalation or Android security bypass is attempted."))
         val out = output()
         body.addView(out)
-        val checks = mutableListOf<String>()
-        checks.add("DEVICE: ${Build.MANUFACTURER} ${Build.MODEL}")
-        checks.add("ANDROID: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
-        checks.add("DEBUGGABLE BUILD: ${(applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0}")
-        checks.add("APP UID: ${applicationInfo.uid}")
-        checks.add("PACKAGE: $packageName")
-        out.text = checks.joinToString("\n\n")
-        body.addView(button("RECHECK") { out.text = checks.joinToString("\n\n") })
+        out.text = androidPosture()
+        body.addView(button("RECHECK") { out.text = androidPosture() })
         showScreen("ANDROID SECURITY", body)
+    }
+
+    private fun androidPosture(): String {
+        val debug = (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        return "DEVICE: ${Build.MANUFACTURER} ${Build.MODEL}\n\nANDROID: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\n\nDEBUGGABLE BUILD: $debug\n\nAPP UID: ${applicationInfo.uid}\n\nPACKAGE: $packageName"
     }
 
     private fun crypto() {
@@ -347,9 +351,9 @@ class MainActivity : Activity() {
         body.addView(button("SHA-256") { out.text = digest(input.text.toString(), "SHA-256") })
         body.addView(button("SHA-512") { out.text = digest(input.text.toString(), "SHA-512") })
         body.addView(button("BASE64 ENCODE") { out.text = Base64.encodeToString(input.text.toString().toByteArray(Charsets.UTF_8), Base64.NO_WRAP) })
-        body.addView(button("BASE64 DECODE") { try { out.text = String(Base64.decode(input.text.toString(), Base64.DEFAULT), Charsets.UTF_8) } catch (e: Exception) { out.text = "INVALID BASE64" } })
-        body.addView(button("URL ENCODE") { try { out.text = URLEncoder.encode(input.text.toString(), "UTF-8") } catch (e: Exception) { out.text = e.message } })
-        body.addView(button("URL DECODE") { try { out.text = URLDecoder.decode(input.text.toString(), "UTF-8") } catch (e: Exception) { out.text = e.message } })
+        body.addView(button("BASE64 DECODE") { out.text = try { String(Base64.decode(input.text.toString(), Base64.DEFAULT), Charsets.UTF_8) } catch (_: Exception) { "INVALID BASE64" } })
+        body.addView(button("URL ENCODE") { out.text = try { URLEncoder.encode(input.text.toString(), "UTF-8") } catch (e: Exception) { e.message ?: "Encode failed" } })
+        body.addView(button("URL DECODE") { out.text = try { URLDecoder.decode(input.text.toString(), "UTF-8") } catch (e: Exception) { e.message ?: "Decode failed" } })
         body.addView(button("AES ENCRYPT") { out.text = aes(input.text.toString(), key.text.toString(), true) })
         body.addView(button("AES DECRYPT") { out.text = aes(input.text.toString(), key.text.toString(), false) })
         showScreen("CRYPTO / HASH", body)
@@ -367,7 +371,7 @@ class MainActivity : Activity() {
             cipher.init(if (encrypt) Cipher.ENCRYPT_MODE else Cipher.DECRYPT_MODE, SecretKeySpec(key.toByteArray(Charsets.UTF_8), "AES"))
             if (encrypt) Base64.encodeToString(cipher.doFinal(value.toByteArray(Charsets.UTF_8)), Base64.NO_WRAP)
             else String(cipher.doFinal(Base64.decode(value, Base64.DEFAULT)), Charsets.UTF_8)
-        } catch (e: Exception) { "AES ERROR\n${e.message}" }
+        } catch (e: Exception) { "AES ERROR\n${e.message ?: "Operation failed"}" }
     }
 
     private fun labs() {
@@ -393,7 +397,10 @@ class MainActivity : Activity() {
             b.addView(input)
             val result = output()
             b.addView(result)
-            b.addView(button("CHECK") { result.text = "Recorded locally. Use the Findings module to document your reasoning." })
+            b.addView(button("SAVE TO FINDINGS") {
+                saveFinding("CTF $no - $name", "INFO", input.text.toString().ifEmpty { "Challenge reviewed locally." })
+                result.text = "SAVED\nChallenge notes added to Findings."
+            })
             showScreen(name, b)
         })
     }
@@ -401,30 +408,236 @@ class MainActivity : Activity() {
     private fun findings() {
         val body = baseBody()
         body.addView(title("FINDINGS TRACKER"))
-        val name = EditText(this); name.hint = "Finding title"; styleInput(name); body.addView(name)
+        body.addView(info("Persistent local findings. Data stays on this device and is never uploaded by BlackPearl."))
+
+        val summary = TextView(this)
+        summary.setTextColor(white)
+        summary.textSize = 14f
+        summary.typeface = Typeface.DEFAULT_BOLD
+        summary.setPadding(dp(14), dp(12), dp(14), dp(12))
+        summary.background = rounded(surface2, Color.TRANSPARENT, 0, 14)
+        body.addView(summary)
+
+        val list = LinearLayout(this)
+        list.orientation = LinearLayout.VERTICAL
+        body.addView(list)
+
+        val refresh = { renderFindings(list, summary) }
+
+        body.addView(section("NEW FINDING"))
+        val name = EditText(this)
+        name.hint = "Finding title"
+        styleInput(name)
+        body.addView(name)
+
         val severity = Spinner(this)
         severity.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, arrayOf("INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"))
         body.addView(severity, LinearLayout.LayoutParams(-1, dp(52)))
-        val evidence = EditText(this); evidence.hint = "Evidence / notes"; evidence.minLines = 5; evidence.gravity = Gravity.TOP; styleInput(evidence); body.addView(evidence)
-        val out = output(); body.addView(out)
-        body.addView(button("CREATE LOCAL FINDING") {
-            val stamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
-            out.text = "FINDING CREATED\n\nTitle: ${name.text}\nSeverity: ${severity.selectedItem}\nTime: $stamp\n\n${evidence.text}"
+
+        val evidence = EditText(this)
+        evidence.hint = "Evidence / notes"
+        evidence.minLines = 5
+        evidence.gravity = Gravity.TOP
+        styleInput(evidence)
+        body.addView(evidence)
+
+        body.addView(button("CREATE FINDING") {
+            val titleText = name.text.toString().trim()
+            if (titleText.isEmpty()) {
+                Toast.makeText(this, "Finding title is required", Toast.LENGTH_SHORT).show()
+                return@button
+            }
+            saveFinding(titleText, severity.selectedItem.toString(), evidence.text.toString().trim())
+            name.text.clear()
+            evidence.text.clear()
+            severity.setSelection(0)
+            refresh()
+            Toast.makeText(this, "Finding saved locally", Toast.LENGTH_SHORT).show()
         })
+
+        body.addView(button("CLEAR ALL FINDINGS") {
+            AlertDialog.Builder(this)
+                .setTitle("Clear findings?")
+                .setMessage("This permanently removes all local findings from this device.")
+                .setNegativeButton("CANCEL", null)
+                .setPositiveButton("CLEAR") { _, _ ->
+                    prefs.edit().remove("findings").apply()
+                    refresh()
+                }
+                .show()
+        })
+
+        refresh()
         showScreen("FINDINGS", body)
+    }
+
+    private fun renderFindings(list: LinearLayout, summary: TextView) {
+        list.removeAllViews()
+        val items = loadFindings()
+        val open = items.count { !it.optBoolean("resolved", false) }
+        val critical = items.count { it.optString("severity") == "CRITICAL" && !it.optBoolean("resolved", false) }
+        summary.text = "TOTAL: ${items.size}     OPEN: $open     CRITICAL: $critical"
+        if (items.isEmpty()) {
+            list.addView(info("No findings yet. Create one below or save notes from a CTF lab."))
+            return
+        }
+        items.forEachIndexed { index, item ->
+            val box = LinearLayout(this)
+            box.orientation = LinearLayout.VERTICAL
+            box.setPadding(dp(14), dp(12), dp(14), dp(12))
+            box.background = rounded(surface, Color.TRANSPARENT, 0, 16)
+
+            val header = LinearLayout(this)
+            header.orientation = LinearLayout.HORIZONTAL
+            header.gravity = Gravity.CENTER_VERTICAL
+            val titleView = TextView(this)
+            titleView.text = item.optString("title", "Untitled")
+            titleView.setTextColor(white)
+            titleView.textSize = 16f
+            titleView.typeface = Typeface.DEFAULT_BOLD
+            header.addView(titleView, LinearLayout.LayoutParams(0, -2, 1f))
+            val sev = TextView(this)
+            sev.text = item.optString("severity", "INFO")
+            sev.setTextColor(severityColor(item.optString("severity")))
+            sev.textSize = 11f
+            sev.typeface = Typeface.DEFAULT_BOLD
+            header.addView(sev)
+            box.addView(header)
+
+            val state = TextView(this)
+            state.text = if (item.optBoolean("resolved", false)) "RESOLVED" else "OPEN"
+            state.setTextColor(if (item.optBoolean("resolved", false)) green else amber)
+            state.textSize = 11f
+            state.setPadding(0, dp(4), 0, dp(4))
+            box.addView(state)
+
+            val evidence = TextView(this)
+            evidence.text = item.optString("evidence", "No evidence recorded.")
+            evidence.setTextColor(muted)
+            evidence.textSize = 13f
+            box.addView(evidence)
+
+            val stamp = TextView(this)
+            stamp.text = item.optString("created", "")
+            stamp.setTextColor(muted)
+            stamp.textSize = 10f
+            stamp.setPadding(0, dp(8), 0, dp(8))
+            box.addView(stamp)
+
+            val actions = LinearLayout(this)
+            actions.orientation = LinearLayout.HORIZONTAL
+            if (!item.optBoolean("resolved", false)) {
+                val resolve = smallButton("RESOLVE", green) {
+                    updateFinding(index, true)
+                    renderFindings(list, summary)
+                }
+                actions.addView(resolve, LinearLayout.LayoutParams(0, dp(44), 1f))
+            }
+            val delete = smallButton("DELETE", red) {
+                deleteFinding(index)
+                renderFindings(list, summary)
+            }
+            val deleteParams = LinearLayout.LayoutParams(0, dp(44), 1f)
+            deleteParams.setMargins(dp(6), 0, 0, 0)
+            actions.addView(delete, deleteParams)
+            box.addView(actions)
+
+            val p = LinearLayout.LayoutParams(-1, -2)
+            p.setMargins(0, 0, 0, dp(8))
+            list.addView(box, p)
+        }
+    }
+
+    private fun severityColor(value: String): Int = when (value) {
+        "CRITICAL", "HIGH" -> red
+        "MEDIUM" -> amber
+        "LOW" -> green
+        else -> cyan
+    }
+
+    private fun saveFinding(title: String, severity: String, evidence: String) {
+        val array = loadFindings()
+        val obj = JSONObject()
+        obj.put("title", title)
+        obj.put("severity", severity)
+        obj.put("evidence", evidence.ifEmpty { "No evidence recorded." })
+        obj.put("created", SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date()))
+        obj.put("resolved", false)
+        array.add(obj)
+        saveFindings(array)
+    }
+
+    private fun updateFinding(index: Int, resolved: Boolean) {
+        val array = loadFindings()
+        if (index in 0 until array.size) {
+            array.getJSONObject(index).put("resolved", resolved)
+            saveFindings(array)
+        }
+    }
+
+    private fun deleteFinding(index: Int) {
+        val array = loadFindings()
+        if (index in 0 until array.size) {
+            array.remove(index)
+            saveFindings(array)
+        }
+    }
+
+    private fun loadFindings(): MutableList<JSONObject> {
+        val result = mutableListOf<JSONObject>()
+        val raw = prefs.getString("findings", "[]") ?: "[]"
+        try {
+            val array = JSONArray(raw)
+            for (i in 0 until array.length()) result.add(array.getJSONObject(i))
+        } catch (_: Exception) {
+            prefs.edit().remove("findings").apply()
+        }
+        return result
+    }
+
+    private fun saveFindings(items: List<JSONObject>) {
+        val array = JSONArray()
+        items.forEach { array.put(it) }
+        prefs.edit().putString("findings", array.toString()).apply()
     }
 
     private fun reports() {
         val body = baseBody()
         body.addView(title("SECURITY REPORT"))
-        body.addView(info("Generate a plain-text local report from the information you enter. No data is uploaded."))
-        val reportTitle = EditText(this); reportTitle.hint = "Assessment title"; styleInput(reportTitle); body.addView(reportTitle)
-        val scope = EditText(this); scope.hint = "Scope"; styleInput(scope); body.addView(scope)
-        val findings = EditText(this); findings.hint = "Findings"; findings.minLines = 6; findings.gravity = Gravity.TOP; styleInput(findings); body.addView(findings)
-        val out = output(); body.addView(out)
+        body.addView(info("Generate a local plain-text report from saved Findings. No data is uploaded."))
+        val reportTitle = EditText(this)
+        reportTitle.hint = "Assessment title"
+        styleInput(reportTitle)
+        body.addView(reportTitle)
+        val scope = EditText(this)
+        scope.hint = "Scope"
+        styleInput(scope)
+        body.addView(scope)
+        val out = output()
+        body.addView(out)
         body.addView(button("GENERATE REPORT") {
-            out.text = "BLACKPEARL SECURITY REPORT\n==========================\nTitle: ${reportTitle.text}\nScope: ${scope.text}\nDate: ${Date()}\n\nFINDINGS\n${findings.text}\n\nSAFETY\nTesting restricted to authorized/local targets."
+            val items = loadFindings()
+            val sb = StringBuilder()
+            sb.append("BLACKPEARL SECURITY REPORT\n")
+            sb.append("==========================\n")
+            sb.append("Title: ").append(reportTitle.text).append('\n')
+            sb.append("Scope: ").append(scope.text).append('\n')
+            sb.append("Date: ").append(Date()).append("\n\n")
+            sb.append("FINDINGS\n--------\n")
+            if (items.isEmpty()) {
+                sb.append("No findings recorded.\n")
+            } else {
+                items.forEachIndexed { i, item ->
+                    sb.append("${i + 1}. ${item.optString("title")} [${item.optString("severity")}]\n")
+                    sb.append("State: ${if (item.optBoolean("resolved")) "RESOLVED" else "OPEN"}\n")
+                    sb.append("Evidence: ${item.optString("evidence")}\n")
+                    sb.append("Created: ${item.optString("created")}\n\n")
+                }
+            }
+            sb.append("SAFETY\n------\nTesting restricted to authorized/local targets.")
+            out.text = sb.toString()
         })
+        body.addView(button("OPEN FINDINGS") { findings() })
         showScreen("REPORTS", body)
     }
 
@@ -499,6 +712,17 @@ class MainActivity : Activity() {
         return b
     }
 
+    private fun smallButton(label: String, color: Int, action: () -> Unit): Button {
+        val b = Button(this)
+        b.text = label
+        b.setTextColor(Color.BLACK)
+        b.textSize = 10f
+        b.typeface = Typeface.DEFAULT_BOLD
+        b.background = rounded(color, Color.TRANSPARENT, 0, 12)
+        b.setOnClickListener { action() }
+        return b
+    }
+
     private fun textButton(text: String, size: Int, color: Int): TextView {
         val t = TextView(this)
         t.text = text
@@ -538,9 +762,6 @@ class MainActivity : Activity() {
 
     private fun allowedHost(host: String): Boolean {
         val normalized = host.trim().lowercase(Locale.US).removeSuffix(".")
-        return normalized == "localhost" ||
-            normalized == "127.0.0.1" ||
-            normalized == "::1" ||
-            normalized == "0:0:0:0:0:0:0:1"
+        return normalized == "localhost" || normalized == "127.0.0.1" || normalized == "::1" || normalized == "0:0:0:0:0:0:0:1"
     }
 }
