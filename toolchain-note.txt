@@ -1,0 +1,1 @@
+AndroidIDE compatibility reference: https://github.com/AndroidIDEOfficial/AndroidIDE#limitations
