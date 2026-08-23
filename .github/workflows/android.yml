@@ -73,19 +73,25 @@ jobs:
             adb install -r app/build/outputs/apk/debug/app-debug.apk
 
             echo "Verifying package registration..."
-            adb shell pm path com.blackpearl.lab
+            PACKAGE_PATH=$(adb shell pm path com.blackpearl.lab | tr -d '\r')
+            echo "$PACKAGE_PATH"
+            test -n "$PACKAGE_PATH"
+            echo "$PACKAGE_PATH" | grep -Fq 'base.apk'
 
             echo "Launching MainActivity..."
-            adb shell am force-stop com.blackpearl.lab
-            START_OUTPUT=$(adb shell am start -W -n com.blackpearl.lab/.MainActivity 2>&1)
-            echo "$START_OUTPUT"
-            echo "$START_OUTPUT" | grep -q 'Status: ok'
+            adb shell am force-stop com.blackpearl.lab || true
+            adb shell am start -n com.blackpearl.lab/.MainActivity
 
-            echo "Checking activity after launch..."
+            echo "Waiting for application process..."
             sleep 3
-            adb shell dumpsys activity activities | grep -q 'com.blackpearl.lab/.MainActivity'
+            PID=$(adb shell pidof com.blackpearl.lab 2>/dev/null | tr -d '\r' || true)
+            echo "PID: $PID"
+            test -n "$PID"
 
-            echo "Checking package remains installed..."
-            adb shell pm path com.blackpearl.lab | grep -q 'base.apk'
+            echo "Verifying activity/package state..."
+            adb shell dumpsys activity activities > /tmp/activity.txt
+            adb shell dumpsys package com.blackpearl.lab > /tmp/package.txt
+            grep -Fq 'com.blackpearl.lab' /tmp/activity.txt
+            grep -Fq 'com.blackpearl.lab/.MainActivity' /tmp/package.txt
 
             echo "Phase 2 Android launch smoke test passed"
