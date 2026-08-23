@@ -109,13 +109,13 @@ class MainActivity : Activity() {
         }
         val t = TextView(this)
         t.text = title
-        t.textColor = white
+        t.setTextColor(white)
         t.textSize = 22f
         t.typeface = Typeface.create("sans-serif", Typeface.BOLD)
         bar.addView(t, LinearLayout.LayoutParams(0, -1, 1f))
         val badge = TextView(this)
         badge.text = "SAFE"
-        badge.textColor = green
+        badge.setTextColor(green)
         badge.textSize = 11f
         badge.gravity = Gravity.CENTER
         badge.background = rounded(Color.TRANSPARENT, cyan, 1, 14)
@@ -130,18 +130,18 @@ class MainActivity : Activity() {
         box.background = rounded(surface2, Color.TRANSPARENT, 0, 18)
         val title = TextView(this)
         title.text = "LEARN. TEST. DEFEND."
-        title.textColor = white
+        title.setTextColor(white)
         title.textSize = 28f
         title.typeface = Typeface.DEFAULT_BOLD
         box.addView(title)
         val sub = TextView(this)
         sub.text = "A practical white-hat security workstation for Android."
-        sub.textColor = muted
+        sub.setTextColor(muted)
         sub.textSize = 15f
         box.addView(sub, LinearLayout.LayoutParams(-1, -2))
         val line = TextView(this)
         line.text = "● LOCAL-FIRST     •     ● AUTHORIZED     •     ● AUDITABLE"
-        line.textColor = green
+        line.setTextColor(green)
         line.textSize = 11f
         line.setPadding(0, dp(12), 0, 0)
         box.addView(line)
@@ -151,7 +151,7 @@ class MainActivity : Activity() {
     private fun section(s: String): View {
         val t = TextView(this)
         t.text = s
-        t.textColor = muted
+        t.setTextColor(muted)
         t.textSize = 12f
         t.typeface = Typeface.DEFAULT_BOLD
         t.setPadding(0, dp(18), 0, dp(8))
@@ -166,7 +166,7 @@ class MainActivity : Activity() {
         box.background = rounded(surface, Color.TRANSPARENT, 0, 16)
         val i = TextView(this)
         i.text = icon
-        i.textColor = cyan
+        i.setTextColor(cyan)
         i.textSize = 26f
         i.gravity = Gravity.CENTER
         box.addView(i, LinearLayout.LayoutParams(dp(48), dp(54)))
@@ -174,19 +174,19 @@ class MainActivity : Activity() {
         texts.orientation = LinearLayout.VERTICAL
         val t = TextView(this)
         t.text = title
-        t.textColor = white
+        t.setTextColor(white)
         t.textSize = 17f
         t.typeface = Typeface.DEFAULT_BOLD
         texts.addView(t)
         val d = TextView(this)
         d.text = desc
-        d.textColor = muted
+        d.setTextColor(muted)
         d.textSize = 13f
         texts.addView(d)
         box.addView(texts, LinearLayout.LayoutParams(0, -2, 1f))
         val arrow = TextView(this)
         arrow.text = "›"
-        arrow.textColor = muted
+        arrow.setTextColor(muted)
         arrow.textSize = 28f
         box.addView(arrow, LinearLayout.LayoutParams(dp(30), -2))
         box.setOnClickListener { action() }
@@ -434,7 +434,7 @@ class MainActivity : Activity() {
     private fun title(text: String): View {
         val t = TextView(this)
         t.text = text
-        t.textColor = white
+        t.setTextColor(white)
         t.textSize = 27f
         t.typeface = Typeface.DEFAULT_BOLD
         t.setPadding(0, dp(8), 0, dp(12))
@@ -444,7 +444,7 @@ class MainActivity : Activity() {
     private fun info(text: String): View {
         val t = TextView(this)
         t.text = text
-        t.textColor = muted
+        t.setTextColor(muted)
         t.textSize = 14f
         t.setPadding(dp(14), dp(12), dp(14), dp(12))
         t.background = rounded(surface2, Color.TRANSPARENT, 0, 14)
@@ -455,7 +455,7 @@ class MainActivity : Activity() {
 
     private fun output(): TextView {
         val t = TextView(this)
-        t.textColor = green
+        t.setTextColor(green)
         t.textSize = 13f
         t.typeface = Typeface.MONOSPACE
         t.setPadding(dp(14), dp(14), dp(14), dp(14))
@@ -469,7 +469,7 @@ class MainActivity : Activity() {
     private fun button(label: String, action: () -> Unit): View {
         val b = Button(this)
         b.text = label
-        b.textColor = Color.BLACK
+        b.setTextColor(Color.BLACK)
         b.textSize = 12f
         b.typeface = Typeface.DEFAULT_BOLD
         b.background = rounded(cyan, Color.TRANSPARENT, 0, 14)
@@ -484,7 +484,7 @@ class MainActivity : Activity() {
         val t = TextView(this)
         t.text = text
         t.textSize = size.toFloat()
-        t.textColor = color
+        t.setTextColor(color)
         t.gravity = Gravity.CENTER
         return t
     }
