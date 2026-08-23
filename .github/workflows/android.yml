@@ -30,9 +30,56 @@ jobs:
       - name: Build debug APK
         run: gradle --no-daemon --no-build-cache assembleDebug
 
+      - name: Verify APK exists
+        run: |
+          set -e
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          unzip -l app/build/outputs/apk/debug/app-debug.apk | grep -q 'AndroidManifest.xml'
+          echo "APK sanity check passed"
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: BlackPearl-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+  smoke-test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: BlackPearl-debug
+          path: app/build/outputs/apk/debug
+
+      - name: Launch Android emulator and smoke test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: default
+          arch: x86_64
+          profile: pixel_2
+          script: |
+            set -e
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb shell am force-stop com.blackpearl.lab
+            adb shell am start -n com.blackpearl.lab/.MainActivity
+            sleep 5
+            adb shell uiautomator dump /sdcard/window.xml >/dev/null
+            adb shell cat /sdcard/window.xml > /tmp/window.xml
+            grep -q 'BLACKPEARL' /tmp/window.xml
+            grep -q 'RECON' /tmp/window.xml
+            grep -q 'NETWORK' /tmp/window.xml
+            grep -q 'WEB SECURITY' /tmp/window.xml
+            grep -q 'ANDROID SECURITY' /tmp/window.xml
+            grep -q 'CRYPTO / HASH' /tmp/window.xml
+            grep -q 'CTF LABS' /tmp/window.xml
+            grep -q 'FINDINGS' /tmp/window.xml
+            grep -q 'REPORTS' /tmp/window.xml
+            grep -q 'SETTINGS' /tmp/window.xml
+            echo "Phase 2 launch/UI smoke test passed"
