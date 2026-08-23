@@ -21,15 +21,21 @@ jobs:
           distribution: temurin
           java-version: '11'
 
-      - name: Install Gradle 7.3.3 directly
+      - name: Install Gradle 7.3.3 from GitHub release
         run: |
-          wget -q https://services.gradle.org/distributions/gradle-7.3.3-bin.zip -O /tmp/gradle.zip
+          set -e
+          wget -q https://github.com/gradle/gradle-distributions/releases/download/v7.3.3/gradle-7.3.3-bin.zip -O /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /opt
           echo "/opt/gradle-7.3.3/bin" >> "$GITHUB_PATH"
           /opt/gradle-7.3.3/bin/gradle --version
 
       - name: Generate official Gradle wrapper
         run: gradle wrapper --gradle-version 7.3.3 --distribution-type bin
+
+      - name: Verify wrapper
+        run: |
+          test -f gradle/wrapper/gradle-wrapper.jar
+          ls -lh gradle/wrapper/gradle-wrapper.jar
 
       - name: Commit wrapper files
         run: |
