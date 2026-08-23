@@ -210,13 +210,21 @@ class MainActivity : Activity() {
         body.addView(out)
         body.addView(button("RESOLVE HOST") {
             val value = host.text.toString().trim().ifEmpty { "localhost" }
-            if (!allowedHost(value)) { out.text = "BLOCKED\nOnly localhost / 127.0.0.1 / ::1 are allowed."; return@button }
+            if (!allowedHost(value)) {
+                out.text = "BLOCKED\nOnly localhost / 127.0.0.1 / ::1 are allowed."
+                return@button
+            }
             Thread {
                 try {
                     val addrs = InetAddress.getAllByName(value)
-                    val text = buildString { append("HOST: $value\n\n"); addrs.forEach { append("• ").append(it.hostAddress).append('\n') } }
+                    val text = buildString {
+                        append("HOST: $value\n\n")
+                        addrs.forEach { append("• ").append(it.hostAddress).append('\n') }
+                    }
                     runOnUiThread { out.text = text }
-                } catch (e: Exception) { runOnUiThread { out.text = "ERROR\n${e.message}" } }
+                } catch (e: Exception) {
+                    runOnUiThread { out.text = "ERROR\n${e.message}" }
+                }
             }.start()
         })
         showScreen("RECON", body)
@@ -233,11 +241,14 @@ class MainActivity : Activity() {
             Thread {
                 try {
                     val start = System.currentTimeMillis()
-                    val addr = InetAddress.getByName("127.0.0.1")
-                    val ok = addr.isReachable(1000)
+                    val socket = java.net.Socket()
+                    socket.connect(java.net.InetSocketAddress("127.0.0.1", 8080), 1000)
+                    socket.close()
                     val ms = System.currentTimeMillis() - start
-                    runOnUiThread { out.text = "127.0.0.1\nReachable API: $ok\nElapsed: ${ms}ms" }
-                } catch (e: Exception) { runOnUiThread { out.text = "ERROR\n${e.message}" } }
+                    runOnUiThread { out.text = "127.0.0.1:8080\nReachable: YES\nElapsed: ${ms}ms" }
+                } catch (e: Exception) {
+                    runOnUiThread { out.text = "127.0.0.1:8080\nReachable: NO\nNo service is listening on port 8080." }
+                }
             }.start()
         })
         out.text = networkStatus()
@@ -254,7 +265,8 @@ class MainActivity : Activity() {
             caps?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true -> "Ethernet"
             else -> "Offline / unknown"
         }
-        return "CONNECTIVITY\n$type\n\nAndroid: ${Build.VERSION.RELEASE}\nAPI: ${Build.VERSION.SDK_INT}\nDevice: ${Build.MANUFACTURER} ${Build.MODEL}"
+        val validated = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+        return "CONNECTIVITY\n$type\nValidated internet: ${if (validated) "YES" else "NO / UNKNOWN"}\n\nAndroid: ${Build.VERSION.RELEASE}\nAPI: ${Build.VERSION.SDK_INT}\nDevice: ${Build.MANUFACTURER} ${Build.MODEL}"
     }
 
     private fun webSecurity() {
@@ -271,7 +283,10 @@ class MainActivity : Activity() {
             val raw = input.text.toString().trim()
             try {
                 val uri = URI(raw)
-                if (!allowedHost(uri.host ?: "")) { out.text = "BLOCKED\nRemote targets are disabled."; return@button }
+                if (!allowedHost(uri.host ?: "")) {
+                    out.text = "BLOCKED\nRemote targets are disabled."
+                    return@button
+                }
                 Thread {
                     try {
                         val c = URL(raw).openConnection() as HttpURLConnection
@@ -286,9 +301,13 @@ class MainActivity : Activity() {
                         }
                         c.disconnect()
                         runOnUiThread { out.text = text }
-                    } catch (e: Exception) { runOnUiThread { out.text = "ERROR\n${e.message}" } }
+                    } catch (e: Exception) {
+                        runOnUiThread { out.text = "ERROR\n${e.message}" }
+                    }
                 }.start()
-            } catch (e: Exception) { out.text = "INVALID URL\nUse http://127.0.0.1:PORT/" }
+            } catch (e: Exception) {
+                out.text = "INVALID URL\nUse http://127.0.0.1:PORT/"
+            }
         })
         showScreen("WEB SECURITY", body)
     }
@@ -517,5 +536,11 @@ class MainActivity : Activity() {
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
-    private fun allowedHost(host: String): Boolean = host == "localhost" || host == "127.0.0.1" || host == "::1"
+    private fun allowedHost(host: String): Boolean {
+        val normalized = host.trim().lowercase(Locale.US).removeSuffix(".")
+        return normalized == "localhost" ||
+            normalized == "127.0.0.1" ||
+            normalized == "::1" ||
+            normalized == "0:0:0:0:0:0:0:1"
+    }
 }
