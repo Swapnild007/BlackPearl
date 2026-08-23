@@ -570,7 +570,7 @@ class MainActivity : Activity() {
     private fun updateFinding(index: Int, resolved: Boolean) {
         val array = loadFindings()
         if (index in 0 until array.size) {
-            array.getJSONObject(index).put("resolved", resolved)
+            array[index].put("resolved", resolved)
             saveFindings(array)
         }
     }
@@ -578,7 +578,7 @@ class MainActivity : Activity() {
     private fun deleteFinding(index: Int) {
         val array = loadFindings()
         if (index in 0 until array.size) {
-            array.remove(index)
+            array.removeAt(index)
             saveFindings(array)
         }
     }
