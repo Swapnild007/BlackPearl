@@ -93,13 +93,14 @@ jobs:
 
             PACKAGE="com.blackpearl.lab"
             ACTIVITY="${PACKAGE}/.MainActivity"
-            APK="apk-for-smoke-test/app-debug.apk"
 
             echo "Installing BlackPearl APK..."
-            echo "Working directory: $(pwd)"
-            echo "APK: $APK"
-            test -s "$APK"
-            adb install -r "$APK"
+            echo "Runner working directory: $(pwd)"
+            echo "GitHub workspace: ${{ github.workspace }}"
+            echo "Expected APK: ${{ github.workspace }}/apk-for-smoke-test/app-debug.apk"
+
+            test -s "${{ github.workspace }}/apk-for-smoke-test/app-debug.apk"
+            adb install -r "${{ github.workspace }}/apk-for-smoke-test/app-debug.apk"
 
             echo "Verifying package registration..."
             PACKAGE_LINE="$(adb shell pm list packages | tr -d '\r' | grep -Fx "package:${PACKAGE}" || true)"
