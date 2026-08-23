@@ -36,6 +36,7 @@ jobs:
           test -s app/build/outputs/apk/debug/app-debug.apk
           unzip -l app/build/outputs/apk/debug/app-debug.apk | grep -q 'AndroidManifest.xml'
           echo "APK sanity check passed"
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -55,7 +56,28 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: BlackPearl-debug
-          path: app/build/outputs/apk/debug
+          path: artifact-download
+
+      - name: Locate downloaded APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Downloaded artifact contents:"
+          find "$GITHUB_WORKSPACE/artifact-download" -maxdepth 5 -type f -print | sort
+
+          APK_SOURCE="$(find "$GITHUB_WORKSPACE/artifact-download" -type f -name '*.apk' -print -quit)"
+          if [ -z "$APK_SOURCE" ]; then
+            echo "ERROR: No APK was found in the downloaded BlackPearl-debug artifact."
+            exit 1
+          fi
+
+          echo "APK found: $APK_SOURCE"
+          test -s "$APK_SOURCE"
+          mkdir -p "$GITHUB_WORKSPACE/apk-for-smoke-test"
+          cp "$APK_SOURCE" "$GITHUB_WORKSPACE/apk-for-smoke-test/app-debug.apk"
+          test -s "$GITHUB_WORKSPACE/apk-for-smoke-test/app-debug.apk"
+          echo "Smoke-test APK ready:"
+          ls -lh "$GITHUB_WORKSPACE/apk-for-smoke-test/app-debug.apk"
 
       - name: Launch Android emulator and smoke test
         uses: reactivecircus/android-emulator-runner@v2
@@ -67,13 +89,15 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -noaudio -no-boot-anim -gpu swiftshader_indirect -no-snapshot
           script: |
-            set -eu
+            set -euo pipefail
 
             PACKAGE="com.blackpearl.lab"
             ACTIVITY="${PACKAGE}/.MainActivity"
-            APK="app/build/outputs/apk/debug/app-debug.apk"
+            APK="$GITHUB_WORKSPACE/apk-for-smoke-test/app-debug.apk"
 
             echo "Installing BlackPearl APK..."
+            echo "APK: $APK"
+            test -s "$APK"
             adb install -r "$APK"
 
             echo "Verifying package registration..."
