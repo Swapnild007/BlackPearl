@@ -63,9 +63,9 @@ jobs:
         run: |
           set -euo pipefail
           echo "Downloaded artifact contents:"
-          find "$GITHUB_WORKSPACE/artifact-download" -maxdepth 5 -type f -print | sort
+          find artifact-download -maxdepth 5 -type f -print | sort
 
-          APK_SOURCE="$(find "$GITHUB_WORKSPACE/artifact-download" -type f -name '*.apk' -print -quit)"
+          APK_SOURCE="$(find artifact-download -type f -name '*.apk' -print -quit)"
           if [ -z "$APK_SOURCE" ]; then
             echo "ERROR: No APK was found in the downloaded BlackPearl-debug artifact."
             exit 1
@@ -73,11 +73,11 @@ jobs:
 
           echo "APK found: $APK_SOURCE"
           test -s "$APK_SOURCE"
-          mkdir -p "$GITHUB_WORKSPACE/apk-for-smoke-test"
-          cp "$APK_SOURCE" "$GITHUB_WORKSPACE/apk-for-smoke-test/app-debug.apk"
-          test -s "$GITHUB_WORKSPACE/apk-for-smoke-test/app-debug.apk"
+          mkdir -p apk-for-smoke-test
+          cp "$APK_SOURCE" apk-for-smoke-test/app-debug.apk
+          test -s apk-for-smoke-test/app-debug.apk
           echo "Smoke-test APK ready:"
-          ls -lh "$GITHUB_WORKSPACE/apk-for-smoke-test/app-debug.apk"
+          ls -lh apk-for-smoke-test/app-debug.apk
 
       - name: Launch Android emulator and smoke test
         uses: reactivecircus/android-emulator-runner@v2
@@ -93,9 +93,10 @@ jobs:
 
             PACKAGE="com.blackpearl.lab"
             ACTIVITY="${PACKAGE}/.MainActivity"
-            APK="$GITHUB_WORKSPACE/apk-for-smoke-test/app-debug.apk"
+            APK="apk-for-smoke-test/app-debug.apk"
 
             echo "Installing BlackPearl APK..."
+            echo "Working directory: $(pwd)"
             echo "APK: $APK"
             test -s "$APK"
             adb install -r "$APK"
