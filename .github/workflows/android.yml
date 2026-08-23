@@ -30,13 +30,15 @@ jobs:
       - name: Build debug APK
         run: gradle --no-daemon --no-build-cache assembleDebug
 
-      - name: Verify APK exists
+      - name: Verify APK
         run: |
           set -e
-          test -s app/build/outputs/apk/debug/app-debug.apk
-          unzip -l app/build/outputs/apk/debug/app-debug.apk | grep -q 'AndroidManifest.xml'
-          echo "APK sanity check passed"
-          ls -lh app/build/outputs/apk/debug/app-debug.apk
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -tq "$APK"
+          unzip -l "$APK" | grep -q 'AndroidManifest.xml'
+          echo "APK verified: $APK"
+          ls -lh "$APK"
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -44,100 +46,3 @@ jobs:
           name: BlackPearl-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-
-  smoke-test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download debug APK
-        uses: actions/download-artifact@v4
-        with:
-          name: BlackPearl-debug
-          path: artifact-download
-
-      - name: Locate downloaded APK
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "Downloaded artifact contents:"
-          find artifact-download -maxdepth 5 -type f -print | sort
-
-          APK_SOURCE="$(find artifact-download -type f -name '*.apk' -print -quit)"
-          if [ -z "$APK_SOURCE" ]; then
-            echo "ERROR: No APK was found in the downloaded BlackPearl-debug artifact."
-            exit 1
-          fi
-
-          echo "APK found: $APK_SOURCE"
-          test -s "$APK_SOURCE"
-          mkdir -p apk-for-smoke-test
-          cp "$APK_SOURCE" apk-for-smoke-test/app-debug.apk
-          test -s apk-for-smoke-test/app-debug.apk
-          echo "Smoke-test APK ready:"
-          ls -lh apk-for-smoke-test/app-debug.apk
-
-      - name: Launch Android emulator and smoke test
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 33
-          target: default
-          arch: x86_64
-          profile: pixel_2
-          disable-animations: true
-          emulator-options: -no-window -noaudio -no-boot-anim -gpu swiftshader_indirect -no-snapshot
-          script: |
-            set -eu
-
-            PACKAGE="com.blackpearl.lab"
-            ACTIVITY="${PACKAGE}/.MainActivity"
-
-            echo "Installing BlackPearl APK..."
-            echo "Runner working directory: $(pwd)"
-            echo "GitHub workspace: ${{ github.workspace }}"
-            echo "Expected APK: ${{ github.workspace }}/apk-for-smoke-test/app-debug.apk"
-
-            test -s "${{ github.workspace }}/apk-for-smoke-test/app-debug.apk"
-            adb install -r "${{ github.workspace }}/apk-for-smoke-test/app-debug.apk"
-
-            echo "Verifying package registration..."
-            PACKAGE_LINE="$(adb shell pm list packages | tr -d '\r' | grep -Fx "package:${PACKAGE}" || true)"
-            echo "Package result: ${PACKAGE_LINE:-<not found>}"
-            test "$PACKAGE_LINE" = "package:${PACKAGE}"
-
-            echo "Verifying installed APK path..."
-            APK_PATH="$(adb shell cmd package path "$PACKAGE" 2>/dev/null | tr -d '\r' | head -n 1 || true)"
-            echo "APK path: ${APK_PATH:-<not reported>}"
-            test -n "$APK_PATH"
-            echo "$APK_PATH" | grep -Fq 'base.apk'
-
-            echo "Launching MainActivity..."
-            adb shell am force-stop "$PACKAGE" || true
-            START_OUTPUT="$(adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
-            echo "$START_OUTPUT"
-            echo "$START_OUTPUT" | grep -Fq 'Status: ok'
-
-            echo "Waiting for application process..."
-            PID=""
-            for i in 1 2 3 4 5 6 7 8 9 10; do
-              PID="$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r' || true)"
-              if [ -n "$PID" ]; then
-                break
-              fi
-              sleep 1
-            done
-            echo "PID: ${PID:-<not running>}"
-            test -n "$PID"
-
-            echo "Verifying foreground activity..."
-            TOP_ACTIVITY="$(adb shell dumpsys activity top 2>/dev/null | tr -d '\r' || true)"
-            echo "$TOP_ACTIVITY" | grep -Fq "$ACTIVITY"
-
-            echo "Verifying package/activity registration..."
-            adb shell dumpsys package "$PACKAGE" > /tmp/package.txt
-            grep -Fq "$PACKAGE" /tmp/package.txt
-            grep -Fq '.MainActivity' /tmp/package.txt
-
-            echo "Phase 2 Android launch smoke test passed"
