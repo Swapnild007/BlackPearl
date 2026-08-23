@@ -21,11 +21,12 @@ jobs:
           distribution: temurin
           java-version: '11'
 
-      - name: Set up Gradle 7.3.3 without cache
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '7.3.3'
-          cache-disabled: true
+      - name: Install Gradle 7.3.3 directly
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-7.3.3-bin.zip -O /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /opt
+          echo "/opt/gradle-7.3.3/bin" >> "$GITHUB_PATH"
+          /opt/gradle-7.3.3/bin/gradle --version
 
       - name: Generate official Gradle wrapper
         run: gradle wrapper --gradle-version 7.3.3 --distribution-type bin
@@ -41,7 +42,7 @@ jobs:
           fi
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
