@@ -1,5 +1,5 @@
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const main=$("main"), side=$("#side"), modal=$("#modal");
+const main=$("#main"), side=$("#side"), modal=$("#modal");
 const curriculum=[
 {name:"Mathematical Foundations",lessons:84,color:"blue",desc:"Build the mathematical language needed to reason about models, optimization and learning.",first:"Vectors & Linear Combinations"},
 {name:"Computer Science & Systems",lessons:76,color:"green",desc:"Algorithms, memory, processes, networking and GPU fundamentals.",first:"Big-O and Cost Models"},
