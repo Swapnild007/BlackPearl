@@ -55,7 +55,7 @@ document.addEventListener("click",e=>{const c=e.target.closest("[data-choice]");
 function setMenuOpen(open){side.classList.toggle("open",open);document.body.classList.toggle("menu-open",open);$("#menu").setAttribute("aria-expanded",String(open));$("#menu").setAttribute("aria-label",open?"Close navigation":"Open navigation");}
 $("#menu").onclick=()=>setMenuOpen(!side.classList.contains("open"));$("#menu").setAttribute("aria-label","Open navigation");
 
-const savedTheme=localStorage.getItem("blackpearl-theme");if(savedTheme==="dark")document.documentElement.classList.add("dark");
+const savedTheme=localStorage.getItem("blackpearl-theme");if(savedTheme!=="light")document.documentElement.classList.add("dark");
 $("#theme").onclick=()=>{const dark=document.documentElement.classList.toggle("dark");localStorage.setItem("blackpearl-theme",dark?"dark":"light");};
 function closeSearch(){
   modal.classList.remove("open");
