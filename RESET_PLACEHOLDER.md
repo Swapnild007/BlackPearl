@@ -1,1 +1,0 @@
-BlackPearl reset placeholder. This file will be replaced by the new project.
