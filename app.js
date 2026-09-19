@@ -82,6 +82,20 @@ const ch=e.target.closest("[data-bpcheck]");
 if(ch){const v=$("#bpanswer")?.value.trim()||"";const ok=v.length>=25;feedback("#bpfeedback",ok?"Good. Your reasoning is now evidence that you can articulate the mechanism.":"Too shallow. State the objects, operation, causal effect and what you would observe.",ok);if(ok){state.mastery=Math.min(100,(state.mastery||0)+5);state.completed=(state.completed||[]).concat(state.bpLesson.title+":"+state.bpLesson.step);save();if(state.bpLesson.step<4)setTimeout(()=>{state.bpLesson.step++;save();bpLesson(state.bpLesson.title)},650)}}
 });
 
+// Curriculum data bridge
+const BP_DOMAINS=[
+["Mathematical Foundations",["Vectors & Linear Combinations","Matrices & Linear Maps","Eigenvalues & Eigenvectors","Partial Derivatives","Gradients & Jacobians","Probability Distributions","Expectation & Variance","Optimization","Numerical Stability"]],
+["Computer Science & Systems",["Big-O & Cost Models","Data Structures","Recursion & Dynamic Programming","Memory & Processes","Concurrency","Networking","Operating Systems","GPU Architecture","Parallel Thinking"]],
+["Machine Learning & Deep Learning",["Learning Theory","Linear Models","Loss Functions","Gradient Descent","Backpropagation","Regularization","CNNs","RNNs & LSTMs","Training Dynamics"]],
+["Transformers & Foundation Models",["Tokenization","Embeddings","Self-Attention","Multi-Head Attention","Positional Information","Transformer Blocks","Pretraining","Scaling Laws","KV Cache","Evaluation"]],
+["Reasoning, Agents & Post-Training",["RL Foundations","Reward Modeling","SFT","Preference Learning","DPO","GRPO","Reasoning Traces","Tool Use","Agent Loops","Evaluation Harnesses"]],
+["AI Systems, Research & Frontier Engineering",["Profiling","GPU Kernels","Distributed Data Parallel","Tensor Parallelism","Inference Serving","Quantization","Caching","Experiment Design","Ablations","Research Workflow"]]
+];
+function bpCurriculum(domain=0){const d=BP_DOMAINS[Number(domain)]||BP_DOMAINS[0];main.innerHTML=`<section class="page-head"><small>CURRICULUM ENGINE</small><h1>${d[0]}</h1><p>${"Every concept follows the BlackPearl loop: intuition → prediction → derivation → implementation → debugging → transfer."}</p></section><div class="domain-switch">${BP_DOMAINS.map((x,i)=>`<button class="${i==domain?"selected":""}" data-bpd="${i}">0${i+1} ${x[0]}</button>`).join("")}</div><section class="topic-list">${d[1].map((x,i)=>`<article class="topic-row"><span>${String(i+1).padStart(2,"0")}</span><div><small>LESSON ${i+1}</small><h2>${x}</h2><p>Concept → prediction → derivation → implementation → transfer.</p></div><button class="secondary" data-bpt="${i}">${i?"Open":"Start"} lesson →</button></article>`).join("")}</section>`;}
+renderCurriculum=bpCurriculum;
+document.addEventListener("click",e=>{const d=e.target.closest("[data-bpd]");if(d)bpCurriculum(d.dataset.bpd);});
+
+
 // BLACKPEARL COMPLETE TOPIC SEEDS
 const BP_TOPIC_SEEDS={
 "Vectors & Linear Combinations":["A vector is a coordinate representation with algebraic structure.","For v=[4,6], scaling by 0.5 gives [2,3].","a[x,y]=[ax,ay]","Implement scalar multiplication without a library.","Explain why positive scaling preserves direction."],
@@ -156,15 +170,3 @@ for(const [title,s] of Object.entries(BP_TOPIC_SEEDS)){
  const answer=0;
  BP_LESSONS[title]={domain:BP_DOMAINS.find(x=>x[1].includes(title))?.[0]||"BlackPearl",objective:extra,mental,predict,options,answer,derive,transfer};
 }
-// Curriculum data bridge
-const BP_DOMAINS=[
-["Mathematical Foundations",["Vectors & Linear Combinations","Matrices & Linear Maps","Eigenvalues & Eigenvectors","Partial Derivatives","Gradients & Jacobians","Probability Distributions","Expectation & Variance","Optimization","Numerical Stability"]],
-["Computer Science & Systems",["Big-O & Cost Models","Data Structures","Recursion & Dynamic Programming","Memory & Processes","Concurrency","Networking","Operating Systems","GPU Architecture","Parallel Thinking"]],
-["Machine Learning & Deep Learning",["Learning Theory","Linear Models","Loss Functions","Gradient Descent","Backpropagation","Regularization","CNNs","RNNs & LSTMs","Training Dynamics"]],
-["Transformers & Foundation Models",["Tokenization","Embeddings","Self-Attention","Multi-Head Attention","Positional Information","Transformer Blocks","Pretraining","Scaling Laws","KV Cache","Evaluation"]],
-["Reasoning, Agents & Post-Training",["RL Foundations","Reward Modeling","SFT","Preference Learning","DPO","GRPO","Reasoning Traces","Tool Use","Agent Loops","Evaluation Harnesses"]],
-["AI Systems, Research & Frontier Engineering",["Profiling","GPU Kernels","Distributed Data Parallel","Tensor Parallelism","Inference Serving","Quantization","Caching","Experiment Design","Ablations","Research Workflow"]]
-];
-function bpCurriculum(domain=0){const d=BP_DOMAINS[Number(domain)]||BP_DOMAINS[0];main.innerHTML=`<section class="page-head"><small>CURRICULUM ENGINE</small><h1>${d[0]}</h1><p>${"Every concept follows the BlackPearl loop: intuition → prediction → derivation → implementation → debugging → transfer."}</p></section><div class="domain-switch">${BP_DOMAINS.map((x,i)=>`<button class="${i==domain?"selected":""}" data-bpd="${i}">0${i+1} ${x[0]}</button>`).join("")}</div><section class="topic-list">${d[1].map((x,i)=>`<article class="topic-row"><span>${String(i+1).padStart(2,"0")}</span><div><small>LESSON ${i+1}</small><h2>${x}</h2><p>Concept → prediction → derivation → implementation → transfer.</p></div><button class="secondary" data-bpt="${i}">${i?"Open":"Start"} lesson →</button></article>`).join("")}</section>`;}
-renderCurriculum=bpCurriculum;
-document.addEventListener("click",e=>{const d=e.target.closest("[data-bpd]");if(d)bpCurriculum(d.dataset.bpd);});
