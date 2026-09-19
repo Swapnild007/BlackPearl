@@ -94,7 +94,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("click",e=>{if(side.classList.contains("open")&&!e.target.closest("#side")&&!e.target.closest("#menu"))setMenuOpen(false);});
 
-$$$("aside nav button").forEach(b=>b.onclick=()=>navigate(b.textContent.trim().includes("Interview")?"Interview Arena":b.textContent.trim().includes("Research")?"Research Lab":b.textContent.trim().includes("Curriculum")?"Curriculum":b.textContent.trim().includes("Mentor")?"Mentor":b.textContent.trim().includes("Projects")?"Projects":b.textContent.trim().includes("Settings")?"Settings":"Overview"));
+$("aside nav button").forEach(b=>b.onclick=()=>navigate(b.textContent.trim().includes("Interview")?"Interview Arena":b.textContent.trim().includes("Research")?"Research Lab":b.textContent.trim().includes("Curriculum")?"Curriculum":b.textContent.trim().includes("Mentor")?"Mentor":b.textContent.trim().includes("Projects")?"Projects":b.textContent.trim().includes("Settings")?"Settings":"Overview"));
 document.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openSearch()}if(e.key==="Escape"){closeSearch();setMenuOpen(false)}};
 renderOverview();
 
