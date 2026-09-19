@@ -1,24 +1,111 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f7f9fc"><title>BlackPearl • AI Learning System</title><link rel="stylesheet" href="./styles.css"></head>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7">
+<title>BlackPearl • AI Learning System</title>
+<meta name="description" content="BlackPearl, a rigorous AI learning system built around theory, implementation, debugging and research.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+</head>
 <body>
-<header class="topbar"><button id="menu" class="menu-btn" aria-label="Open navigation" aria-expanded="false">☰</button><a class="brand" href="#"><span class="brand-mark"></span><span><b>BLACKPEARL</b><small>LEARN · BUILD · THINK · BEYOND</small></span></a><div class="actions"><button id="search" type="button" aria-label="Search BlackPearl">⌕<span> Search</span></button><button id="theme" type="button" aria-label="Toggle theme">☼</button><b class="avatar">S</b></div></header>
-<div class="layout">
-<aside id="side"><small class="side-title">LEARNING SYSTEM</small><nav><button class="active">⌂ <span>Overview</span></button><button>▣ <span>Curriculum</span></button><button>✦ <span>Mentor</span></button><button>◇ <span>Projects</span></button><button>◎ <span>Interview Arena</span></button><button>⌁ <span>Research Lab</span></button></nav><nav class="bottom"><button>⚙ <span>Settings</span></button></nav></aside>
-<main>
-<section class="hero"><div class="hero-copy"><div class="eyebrow">▥ &nbsp; HARD LEARNING MODE</div><div class="journey">Your AI learning journey</div><h1>Build the mind<br>behind the next.</h1><p>Turn AI theory into deep, testable capability through interactive learning, implementation, debugging and research.</p><div class="hero-actions"><button class="primary" id="continue">Continue learning →</button><button class="secondary">♙ &nbsp; Meet your mentor</button></div></div></section>
-<section class="heading"><div><small>YOUR PROGRESS</small><h2>Learning at a glance</h2></div><em>L1 Foundation</em></section>
-<section class="stats"><article><div class="stat-icon blue">▣</div><small>DOMAINS</small><strong>06</strong><p>Math → Frontier</p></article><article><div class="stat-icon green">▤</div><small>LESSONS</small><strong>520</strong><p>Structured curriculum</p></article><article><div class="stat-icon violet">⌁</div><small>DEEP PROJECTS</small><strong>12</strong><p>Build, break, rebuild</p></article><article><div class="stat-icon amber">▥</div><small>MASTERY</small><strong>L0–L6</strong><p>Evidence based</p></article></section>
-<section class="heading curriculum-heading"><div><small>CURRICULUM</small><h2>Six learning domains</h2></div><button class="view-all">View all&nbsp; ›</button></section>
-<section class="grid">
-<article class="card"><div class="domain-icon blue">Σ</div><div class="card-copy"><small>01</small><h3>Mathematical<br class="mobile-break"> Foundations</h3><p>Linear algebra, calculus, probability, optimization and numerical reasoning.</p></div><button class="card-arrow" data-domain-open="0" aria-label="Open Mathematical Foundations">›</button><div class="bar"><i style="width:38%"></i></div></article>
-<article class="card"><div class="domain-icon green">▱</div><div class="card-copy"><small>02</small><h3>Computer Science<br>& Systems</h3><p>Algorithms, data structures, operating systems, networks and GPU fundamentals.</p></div><button class="card-arrow" data-domain-open="1" aria-label="Open Computer Science & Systems">›</button><div class="bar"><i style="width:42%"></i></div></article>
-<article class="card"><div class="domain-icon violet">⌘</div><div class="card-copy"><small>03</small><h3>Machine Learning<br>& Deep Learning</h3><p>Statistical learning, neural networks, training dynamics and sequence models.</p></div><button class="card-arrow" data-domain-open="2" aria-label="Open Machine Learning & Deep Learning">›</button><div class="bar"><i style="width:30%"></i></div></article>
-<article class="card"><div class="domain-icon pink">◇</div><div class="card-copy"><small>04</small><h3>Transformers &<br>Foundation Models</h3><p>Attention, tokenization, scaling, pretraining, inference and evaluation.</p></div><button class="card-arrow" data-domain-open="3" aria-label="Open Transformers & Foundation Models">›</button><div class="bar"><i style="width:34%"></i></div></article>
-<article class="card"><div class="domain-icon orange">♧</div><div class="card-copy"><small>05</small><h3>Reasoning, Agents<br>& Post-Training</h3><p>RL, preference optimization, tool use, agents and reasoning systems.</p></div><button class="card-arrow" data-domain-open="4" aria-label="Open Reasoning, Agents & Post-Training">›</button><div class="bar"><i style="width:31%"></i></div></article>
-<article class="card"><div class="domain-icon cyan">⌁</div><div class="card-copy"><small>06</small><h3>AI Systems, Research<br>& Frontier Engineering</h3><p>Distributed training, serving, research methodology and frontier systems.</p></div><button class="card-arrow" data-domain-open="5" aria-label="Open AI Systems, Research & Frontier Engineering">›</button><div class="bar"><i style="width:29%"></i></div></article>
-</section>
-<section class="mentor"><b>◆</b><div><small>DIGITAL MENTOR</small><h2>Don't just read. Think.</h2><p>Your mentor asks before explaining, probes weak assumptions and adapts difficulty to your evidence.</p></div><button class="secondary">Enter mentor →</button></section>
-</main></div>
-<nav class="mobile-tabs"><button class="active">⌂<span>Home</span></button><button>▣<span>Curriculum</span></button><button>◇<span>Projects</span></button><button>▥<span>Interview</span></button><button>♧<span>Research</span></button></nav>
-<div id="modal" role="dialog" aria-modal="true" aria-labelledby="search-title" aria-hidden="true"><div><button id="close" type="button" aria-label="Close search">×</button><label id="search-title" class="sr-only" for="q">Search BlackPearl</label><input id="q" type="search" autocomplete="off" placeholder="Search BlackPearl..." aria-label="Search BlackPearl"><p>Try attention, backprop, KV cache or projects.</p><div id="searchResults" class="search-results" aria-live="polite"></div></div></div>
-<script src="./app.js"></script></body></html>
+<header class="topbar">
+  <div class="nav-wrap">
+    <nav class="nav" aria-label="Primary navigation">
+      <button id="menu" class="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="side">☰</button>
+      <a class="brand" href="#" aria-label="BlackPearl home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span><b>BLACKPEARL</b><small>LEARN · BUILD · THINK · BEYOND</small></span>
+      </a>
+      <div class="actions">
+        <button id="search" type="button" aria-label="Search BlackPearl"><span class="search-label">⌕&nbsp; Search</span><span class="search-mobile">⌕</span></button>
+        <button id="theme" type="button" aria-label="Toggle theme">☼</button>
+        <b class="avatar" aria-label="Profile">S</b>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<div class="shell">
+  <aside id="side" aria-label="Learning system navigation">
+    <div class="side-head"><small>LEARNING SYSTEM</small></div>
+    <nav class="side-nav">
+      <button class="active" type="button">⌂ <span>Overview</span></button>
+      <button type="button">▣ <span>Curriculum</span></button>
+      <button type="button">✦ <span>Mentor</span></button>
+      <button type="button">◇ <span>Projects</span></button>
+      <button type="button">◎ <span>Interview Arena</span></button>
+      <button type="button">⌁ <span>Research Lab</span></button>
+    </nav>
+    <nav class="side-bottom"><button type="button">⚙ <span>Settings</span></button></nav>
+  </aside>
+
+  <main id="main">
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="eyebrow"><span class="status-dot"></span> HARD LEARNING MODE</div>
+        <p class="journey">Your AI learning journey</p>
+        <h1>Build the mind<br><em>behind the next.</em></h1>
+        <p class="hero-copy">Turn AI theory into deep, testable capability through interactive learning, implementation, debugging and research.</p>
+        <div class="hero-actions">
+          <button class="primary" id="continue" type="button">Continue learning <span>→</span></button>
+          <button class="secondary" type="button" data-action="mentor">Meet your mentor</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="heading">
+      <div><small>YOUR PROGRESS</small><h2>Learning at a glance</h2></div>
+      <em>L1 Foundation</em>
+    </section>
+
+    <section class="stats">
+      <article><div class="stat-icon blue">▣</div><small>DOMAINS</small><strong>06</strong><p>Math → Frontier</p></article>
+      <article><div class="stat-icon green">▤</div><small>LESSONS</small><strong>520</strong><p>Structured curriculum</p></article>
+      <article><div class="stat-icon violet">⌁</div><small>DEEP PROJECTS</small><strong>12</strong><p>Build, break, rebuild</p></article>
+      <article><div class="stat-icon amber">▥</div><small>MASTERY</small><strong>L0–L6</strong><p>Evidence based</p></article>
+    </section>
+
+    <section class="heading curriculum-heading">
+      <div><small>CURRICULUM</small><h2>Six learning domains</h2></div>
+      <button class="view-all" type="button" data-action="curriculum">View all&nbsp; ›</button>
+    </section>
+
+    <section class="grid">
+      <article class="card" data-domain="0"><div class="domain-icon blue">Σ</div><div class="card-copy"><small>01</small><h3>Mathematical Foundations</h3><p>Linear algebra, calculus, probability, optimization and numerical reasoning.</p></div><button class="card-arrow" data-domain-open="0" aria-label="Open Mathematical Foundations">›</button><div class="bar"><i style="width:38%"></i></div></article>
+      <article class="card" data-domain="1"><div class="domain-icon green">▱</div><div class="card-copy"><small>02</small><h3>Computer Science &amp; Systems</h3><p>Algorithms, data structures, operating systems, networks and GPU fundamentals.</p></div><button class="card-arrow" data-domain-open="1" aria-label="Open Computer Science and Systems">›</button><div class="bar"><i style="width:42%"></i></div></article>
+      <article class="card" data-domain="2"><div class="domain-icon violet">⌘</div><div class="card-copy"><small>03</small><h3>Machine Learning &amp; Deep Learning</h3><p>Statistical learning, neural networks, training dynamics and sequence models.</p></div><button class="card-arrow" data-domain-open="2" aria-label="Open Machine Learning and Deep Learning">›</button><div class="bar"><i style="width:30%"></i></div></article>
+      <article class="card" data-domain="3"><div class="domain-icon pink">◇</div><div class="card-copy"><small>04</small><h3>Transformers &amp; Foundation Models</h3><p>Attention, tokenization, scaling, pretraining, inference and evaluation.</p></div><button class="card-arrow" data-domain-open="3" aria-label="Open Transformers and Foundation Models">›</button><div class="bar"><i style="width:34%"></i></div></article>
+      <article class="card" data-domain="4"><div class="domain-icon orange">♧</div><div class="card-copy"><small>05</small><h3>Reasoning, Agents &amp; Post-Training</h3><p>RL, preference optimization, tool use, agents and reasoning systems.</p></div><button class="card-arrow" data-domain-open="4" aria-label="Open Reasoning Agents and Post-Training">›</button><div class="bar"><i style="width:31%"></i></div></article>
+      <article class="card" data-domain="5"><div class="domain-icon cyan">⌁</div><div class="card-copy"><small>06</small><h3>AI Systems, Research &amp; Frontier Engineering</h3><p>Distributed training, serving, research methodology and frontier systems.</p></div><button class="card-arrow" data-domain-open="5" aria-label="Open AI Systems Research and Frontier Engineering">›</button><div class="bar"><i style="width:29%"></i></div></article>
+    </section>
+
+    <section class="mentor">
+      <b>◆</b><div><small>DIGITAL MENTOR</small><h2>Don't just read. Think.</h2><p>Your mentor asks before explaining, probes weak assumptions and adapts difficulty to your evidence.</p></div><button class="secondary" type="button" data-action="mentor">Enter mentor →</button>
+    </section>
+  </main>
+</div>
+
+<nav class="mobile-tabs" aria-label="Mobile navigation">
+  <button class="active" type="button">⌂<span>Home</span></button>
+  <button type="button">▣<span>Curriculum</span></button>
+  <button type="button">◇<span>Projects</span></button>
+  <button type="button">▥<span>Interview</span></button>
+  <button type="button">♧<span>Research</span></button>
+</nav>
+
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="search-title" aria-hidden="true">
+  <div>
+    <button id="close" type="button" aria-label="Close search">×</button>
+    <label id="search-title" class="sr-only" for="q">Search BlackPearl</label>
+    <input id="q" type="search" autocomplete="off" placeholder="Search BlackPearl..." aria-label="Search BlackPearl">
+    <p>Try attention, backprop, KV cache or projects.</p>
+    <div id="searchResults" class="search-results" aria-live="polite"></div>
+  </div>
+</div>
+<script src="./app.js"></script>
+</body>
+</html>
