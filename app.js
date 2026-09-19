@@ -9,7 +9,7 @@ const curriculum=[
 {name:"AI Systems, Research & Frontier Engineering",lessons:62,color:"cyan",desc:"Distributed training, serving, experimentation and frontier engineering.",first:"Throughput, Latency & Utilization"}
 ];
 const lesson={title:"Vectors & Linear Combinations",domain:"Mathematical Foundations",objective:"Understand a vector as a point, direction and computational object, then predict the effect of linear combinations before calculating them.",steps:["Mental Model","Predict","Derive","Implement","Transfer"]};
-let state=JSON.parse(localStorage.getItem("blackpearl-state")||'{"mastery":0,"lessonStep":0,"answered":false,"completed":[]}'); window.state=state;
+let state=window.state||JSON.parse(localStorage.getItem("blackpearl-state")||'{"mastery":0,"lessonStep":0,"answered":false,"completed":[]}'); window.state=state;
 const save=()=>localStorage.setItem("blackpearl-state",JSON.stringify(state));
 function setActive(label){
   const key=label.toLowerCase();
