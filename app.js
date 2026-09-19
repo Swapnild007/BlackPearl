@@ -17,7 +17,7 @@ function renderOverview(){main.innerHTML=`
 <section class="heading"><div><small>YOUR PROGRESS</small><h2>Learning at a glance</h2></div><em>L${Math.min(6,Math.floor(state.mastery/3)+1)} Foundation</em></section>
 <section class="stats"><article><div class="stat-icon blue">▣</div><small>DOMAINS</small><strong>06</strong><p>Math → Frontier</p></article><article><div class="stat-icon green">▤</div><small>LESSONS</small><strong>520</strong><p>Structured curriculum</p></article><article><div class="stat-icon violet">⌁</div><small>DEEP PROJECTS</small><strong>12</strong><p>Build, break, rebuild</p></article><article><div class="stat-icon amber">▥</div><small>MASTERY</small><strong>${state.mastery}%</strong><p>Evidence based</p></article></section>
 <section class="heading curriculum-heading"><div><small>CURRICULUM</small><h2>Six learning domains</h2></div><button class="view-all" data-action="curriculum">View all&nbsp; ›</button></section>
-<section class="grid">${curriculum.map((d,i)=>`<article class="card" data-domain="${i}"><div class="domain-icon ${d.color}">${["Σ","▱","⌘","◇","♧","⌁"][i]}</div><div class="card-copy"><small>0${i+1} · ${d.lessons} LESSONS</small><h3>${d.name}</h3><p>${d.desc}</p></div><button class="card-arrow">›</button><div class="bar"><i style="width:${Math.max(8,state.mastery/2)}%"></i></div></article>`).join("")}</section>
+<section class="grid">${curriculum.map((d,i)=>`<article class="card" data-domain="${i}"><div class="domain-icon ${d.color}">${["Σ","▱","⌘","◇","♧","⌁"][i]}</div><div class="card-copy"><small>0${i+1} · ${d.lessons} LESSONS</small><h3>${d.name}</h3><p>${d.desc}</p></div><button class="card-arrow" data-domain-open="${i}" aria-label="Open ${d.name}">›</button><div class="bar"><i style="width:${Math.max(8,state.mastery/2)}%"></i></div></article>`).join("")}</section>
 <section class="mentor"><b>◆</b><div><small>DIGITAL MENTOR</small><h2>Don't just read. Think.</h2><p>Your mentor asks before explaining, probes weak assumptions and adapts difficulty to your evidence.</p></div><button class="secondary" data-action="mentor">Enter mentor →</button></section>`;
 }
 function renderCurriculum(){main.innerHTML=`<section class="page-head"><small>CURRICULUM ENGINE</small><h1>Learn by building evidence.</h1><p>Each domain moves from intuition to implementation, debugging, transfer and research. Nothing is counted as mastered because it was merely read.</p></section><section class="domain-list">${curriculum.map((d,i)=>`<article class="domain-row"><div class="domain-index">${String(i+1).padStart(2,"0")}</div><div><small>${d.lessons} LESSONS</small><h2>${d.name}</h2><p>${d.desc}</p><span class="lesson-tag">Next: ${d.first}</span></div><button class="primary" data-domain="${i}">Open domain →</button></article>`).join("")}</section>`;}
@@ -170,3 +170,11 @@ for(const [title,s] of Object.entries(BP_TOPIC_SEEDS)){
  const answer=0;
  BP_LESSONS[title]={domain:BP_DOMAINS.find(x=>x[1].includes(title))?.[0]||"BlackPearl",objective:extra,mental,predict,options,answer,derive,transfer};
 }
+
+// Domain card navigation: arrow and card now open the selected curriculum domain.
+document.addEventListener("click",e=>{
+  const arrow=e.target.closest("[data-domain-open]");
+  if(arrow){e.preventDefault();e.stopPropagation();bpCurriculum(Number(arrow.dataset.domainOpen));setActive("Curriculum");window.scrollTo({top:0,behavior:"smooth"});return;}
+  const card=e.target.closest(".card[data-domain]");
+  if(card && !e.target.closest("button")){bpCurriculum(Number(card.dataset.domain));setActive("Curriculum");window.scrollTo({top:0,behavior:"smooth"});}
+});
