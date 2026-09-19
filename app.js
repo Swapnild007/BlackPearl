@@ -180,6 +180,15 @@ for(const [title,s] of Object.entries(BP_TOPIC_SEEDS)){
 
 // Domain card navigation: arrow and card now open the selected curriculum domain.
 document.addEventListener("click",e=>{
+  const tab=e.target.closest(".mobile-tabs button");
+  if(tab){
+    const label=tab.textContent.trim().toLowerCase();
+    const map={home:"Overview",curriculum:"Curriculum",projects:"Projects",interview:"Interview Arena",research:"Research Lab"};
+    if(map[label]){navigate(map[label]);}
+    return;
+  }
+});
+document.addEventListener("click",e=>{
   const arrow=e.target.closest("[data-domain-open]");
   if(arrow){e.preventDefault();e.stopPropagation();bpCurriculum(Number(arrow.dataset.domainOpen));setActive("Curriculum");window.scrollTo({top:0,behavior:"smooth"});return;}
   const card=e.target.closest(".card[data-domain]");
