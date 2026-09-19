@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BookOpen, BrainCircuit, ChevronRight, FlaskConical, GraduationCap, Menu, Moon, Search, Sparkles, Sun, X, type LucideIcon } from "lucide-react";
-import { Link, Route, Routes, useLocation } from "react-router-dom";
+import { HashRouter, Link, Route, Routes, useLocation } from "react-router-dom";
 import { academic, lessonSeeds, modules, projects, studyLayers } from "./data";
 
 function useTheme() {
@@ -105,5 +105,5 @@ function ModuleRoute() {
 
 export default function App() {
   const [dark, toggle] = useTheme();
-  return <Shell dark={dark} toggle={toggle}><Routes><Route path="/" element={<Home />} /><Route path="/learn" element={<Learn />} /><Route path="/learn/:id" element={<ModuleRoute />} /><Route path="/curriculum" element={<Curriculum />} /><Route path="/projects" element={<Projects />} /><Route path="/academic" element={<Academic />} /><Route path="/glossary" element={<Glossary />} /><Route path="*" element={<Home />} /></Routes></Shell>;
+  return <HashRouter><Shell dark={dark} toggle={toggle}><Routes><Route path="/" element={<Home />} /><Route path="/learn" element={<Learn />} /><Route path="/learn/:id" element={<ModuleRoute />} /><Route path="/curriculum" element={<Curriculum />} /><Route path="/projects" element={<Projects />} /><Route path="/academic" element={<Academic />} /><Route path="/glossary" element={<Glossary />} /><Route path="*" element={<Home />} /></Routes></Shell></HashRouter>;
 }
