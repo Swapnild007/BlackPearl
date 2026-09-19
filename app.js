@@ -43,3 +43,22 @@ modal.onclick=e=>{if(e.target===modal)modal.classList.remove("open")};
 $$("aside nav button").forEach(b=>b.onclick=()=>navigate(b.textContent.trim().includes("Interview")?"Interview Arena":b.textContent.trim().includes("Research")?"Research Lab":b.textContent.trim().includes("Curriculum")?"Curriculum":b.textContent.trim().includes("Mentor")?"Mentor":b.textContent.trim().includes("Projects")?"Projects":b.textContent.trim().includes("Settings")?"Settings":"Overview"));
 document.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();modal.classList.add("open");$("#q").focus()}if(e.key==="Escape")modal.classList.remove("open")};
 renderOverview();
+// BLACKPEARL LONG-RUN LEARNING EXPANSION
+const BP_DOMAINS=[
+["Mathematical Foundations",["Vectors & Linear Combinations","Matrices & Linear Maps","Eigenvalues & Eigenvectors","Partial Derivatives","Gradients & Jacobians","Probability Distributions","Expectation & Variance","Optimization","Numerical Stability"]],
+["Computer Science & Systems",["Big-O & Cost Models","Data Structures","Recursion & Dynamic Programming","Memory & Processes","Concurrency","Networking","Operating Systems","GPU Architecture","Parallel Thinking"]],
+["Machine Learning & Deep Learning",["Learning Theory","Linear Models","Loss Functions","Gradient Descent","Backpropagation","Regularization","CNNs","RNNs & LSTMs","Training Dynamics"]],
+["Transformers & Foundation Models",["Tokenization","Embeddings","Self-Attention","Multi-Head Attention","Positional Information","Transformer Blocks","Pretraining","Scaling Laws","KV Cache","Evaluation"]],
+["Reasoning, Agents & Post-Training",["RL Foundations","Reward Modeling","SFT","Preference Learning","DPO","GRPO","Reasoning Traces","Tool Use","Agent Loops","Evaluation Harnesses"]],
+["AI Systems, Research & Frontier Engineering",["Profiling","GPU Kernels","Distributed Data Parallel","Tensor Parallelism","Inference Serving","Quantization","Caching","Experiment Design","Ablations","Research Workflow"]]
+];
+const BP_ICONS=["Σ","▱","⌘","◇","♧","⌁"],BP_COLORS=["blue","green","violet","pink","orange","cyan"];
+function bpCurriculum(domain=0){
+const d=BP_DOMAINS[Number(domain)]||BP_DOMAINS[0];
+main.innerHTML=`<section class="page-head"><small>CURRICULUM ENGINE</small><h1>${d[0]}</h1><p>Every concept follows the BlackPearl loop: intuition → prediction → derivation → implementation → debugging → transfer.</p></section><div class="domain-switch">${BP_DOMAINS.map((x,i)=>`<button class="${i==domain?"selected":""}" data-bpd="${i}">0${i+1} ${x[0]}</button>`).join("")}</div><section class="topic-list">${d[1].map((x,i)=>`<article class="topic-row"><span>${String(i+1).padStart(2,"0")}</span><div><small>LESSON ${i+1}</small><h2>${x}</h2><p>Concept → prediction → derivation → implementation → transfer.</p></div><button class="secondary" data-bpt="${i}">Open lesson →</button></article>`).join("")}</section>`;
+}
+renderCurriculum=bpCurriculum;
+document.addEventListener("click",e=>{
+const d=e.target.closest("[data-bpd]");if(d)bpCurriculum(d.dataset.bpd);
+const t=e.target.closest("[data-bpt]");if(t){const title=BP_DOMAINS[Number(document.querySelector("[data-bpd].selected")?.dataset.bpd||0)][1][Number(t.dataset.bpt)];state.selectedLesson=title;save();renderLesson();}
+});
