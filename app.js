@@ -11,7 +11,13 @@ const curriculum=[
 const lesson={title:"Vectors & Linear Combinations",domain:"Mathematical Foundations",objective:"Understand a vector as a point, direction and computational object, then predict the effect of linear combinations before calculating them.",steps:["Mental Model","Predict","Derive","Implement","Transfer"]};
 let state=JSON.parse(localStorage.getItem("blackpearl-state")||'{"mastery":0,"lessonStep":0,"answered":false,"completed":[]}');
 const save=()=>localStorage.setItem("blackpearl-state",JSON.stringify(state));
-function setActive(label){$$("aside nav button").forEach(b=>b.classList.toggle("active",b.textContent.toLowerCase().includes(label.toLowerCase())));$$(".mobile-tabs button").forEach(b=>b.classList.toggle("active",b.textContent.toLowerCase().includes(label.toLowerCase())));}
+function setActive(label){
+  const key=label.toLowerCase();
+  $("aside nav button").forEach(b=>b.classList.toggle("active",b.textContent.toLowerCase().includes(key)));
+  const mobileMap={"overview":"home","curriculum":"curriculum","projects":"projects","interview arena":"interview","research lab":"research"};
+  const mobileKey=mobileMap[key]||key;
+  $(".mobile-tabs button").forEach(b=>b.classList.toggle("active",b.textContent.toLowerCase().includes(mobileKey)));
+}
 function renderOverview(){main.innerHTML=`
 <section class="hero"><div class="hero-copy"><div class="eyebrow">▥ &nbsp; HARD LEARNING MODE</div><div class="journey">Your AI learning journey</div><h1>Build the mind<br>behind the next.</h1><p>Turn AI theory into deep, testable capability through interactive learning, implementation, debugging and research.</p><div class="hero-actions"><button class="primary" data-action="lesson">Continue learning →</button><button class="secondary" data-action="mentor">♙ &nbsp; Meet your mentor</button></div></div></section>
 <section class="heading"><div><small>YOUR PROGRESS</small><h2>Learning at a glance</h2></div><em>L${Math.min(6,Math.floor(state.mastery/3)+1)} Foundation</em></section>
@@ -35,10 +41,11 @@ function navigate(label){setMenuOpen(false);setActive(label);if(label==="Overvie
 function feedback(id,msg,good=true){const e=$(id);if(e)e.innerHTML=`<div class="feedback ${good?"good":"coach"}">${msg}</div>`;}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-action]");if(b){const a=b.dataset.action;if(a==="lesson"){setActive("Overview");renderLesson()}if(a==="mentor"){navigate("Mentor")}if(a==="curriculum"){navigate("Curriculum")}if(a==="overview"){navigate("Overview")}if(a==="next"){state.lessonStep=Math.min(lesson.steps.length-1,state.lessonStep+1);save();renderLesson()}if(a==="mentor-check"){const v=$("#mentorAnswer")?.value.toLowerCase()||"";feedback("#mentorFeedback",v.includes("half")||v.includes("magnitude")||v.includes("length")?"Good. You identified the key geometric effect: scaling changes magnitude while preserving direction for a positive scalar.":"Push further: what happens to magnitude, direction and each coordinate?",v.includes("half")||v.includes("magnitude"))}if(a==="derive-check"){const v=$("#derive")?.value.replace(/\s/g,"").toLowerCase()||"";const ok=v.includes("ax")&&v.includes("ay");feedback("#deriveFeedback",ok?"Correct. Scalar multiplication distributes coordinate-wise.":"Not yet. Start from a·[x,y] and apply the scalar to each component.",ok);if(ok){state.mastery=Math.min(100,state.mastery+5);save()}}if(a==="impl-check"){const v=$("#impl")?.value||"";feedback("#implFeedback",v.length>20?"Good. You described an actual transformation rather than relying on a library call.":"Give the algorithm: iterate through components, multiply each by the scalar, return a new vector.",v.length>20);if(v.length>20){state.mastery=Math.min(100,state.mastery+5);save()}}if(a==="transfer-check"){const v=$("#transfer")?.value||"";feedback("#transferFeedback",v.length>30?"Strong transfer attempt. Consider separating direction, magnitude and the effect on downstream dot products or activations.":"Make one causal chain: scaling → representation statistics → downstream operation → output.",v.length>30);if(v.length>30){state.mastery=Math.min(100,state.mastery+5);save()}}}});
 document.addEventListener("click",e=>{const c=e.target.closest("[data-choice]");if(!c)return;$$("[data-choice]").forEach(x=>x.classList.remove("selected"));c.classList.add("selected");const ok=c.dataset.choice==="half";const el=$("#choiceFeedback");if(el)el.innerHTML=`<div class="feedback ${ok?"good":"coach"}">${ok?"Correct. Scalar multiplication scales every component, so [4,6] becomes [2,3].":"Check the operation coordinate by coordinate. What happens to x? What happens to y?"}</div>`;if(ok){state.mastery=Math.min(100,state.mastery+5);state.answered=true;save();setTimeout(()=>{state.lessonStep=2;save();renderLesson()},650)}});
-function setMenuOpen(open){side.classList.toggle("open",open);document.body.classList.toggle("menu-open",open);$("#menu").setAttribute("aria-expanded",String(open));}
-$("#menu").onclick=()=>setMenuOpen(!side.classList.contains("open"));
+function setMenuOpen(open){side.classList.toggle("open",open);document.body.classList.toggle("menu-open",open);$("#menu").setAttribute("aria-expanded",String(open));$("#menu").setAttribute("aria-label",open?"Close navigation":"Open navigation");}
+$("#menu").onclick=()=>setMenuOpen(!side.classList.contains("open"));$("#menu").setAttribute("aria-label","Open navigation");
 
-$("#theme").onclick=()=>document.documentElement.classList.toggle("dark");
+const savedTheme=localStorage.getItem("blackpearl-theme");if(savedTheme==="dark")document.documentElement.classList.add("dark");
+$("#theme").onclick=()=>{const dark=document.documentElement.classList.toggle("dark");localStorage.setItem("blackpearl-theme",dark?"dark":"light");};
 $("#search").onclick=()=>modal.classList.add("open");
 $("#close").onclick=()=>modal.classList.remove("open");
 modal.onclick=e=>{if(e.target===modal)modal.classList.remove("open")};
