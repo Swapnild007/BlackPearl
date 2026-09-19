@@ -13,10 +13,10 @@ let state=JSON.parse(localStorage.getItem("blackpearl-state")||'{"mastery":0,"le
 const save=()=>localStorage.setItem("blackpearl-state",JSON.stringify(state));
 function setActive(label){
   const key=label.toLowerCase();
-  $("aside nav button").forEach(b=>b.classList.toggle("active",b.textContent.toLowerCase().includes(key)));
+  $$("aside nav button").forEach(b=>b.classList.toggle("active",b.textContent.toLowerCase().includes(key)));
   const mobileMap={"overview":"home","curriculum":"curriculum","projects":"projects","interview arena":"interview","research lab":"research"};
   const mobileKey=mobileMap[key]||key;
-  $(".mobile-tabs button").forEach(b=>b.classList.toggle("active",b.textContent.toLowerCase().includes(mobileKey)));
+  $$(".mobile-tabs button").forEach(b=>b.classList.toggle("active",b.textContent.toLowerCase().includes(mobileKey)));
 }
 function renderOverview(){main.innerHTML=`
 <section class="hero"><div class="hero-copy"><div class="eyebrow">▥ &nbsp; HARD LEARNING MODE</div><div class="journey">Your AI learning journey</div><h1>Build the mind<br>behind the next.</h1><p>Turn AI theory into deep, testable capability through interactive learning, implementation, debugging and research.</p><div class="hero-actions"><button class="primary" data-action="lesson">Continue learning →</button><button class="secondary" data-action="mentor">♙ &nbsp; Meet your mentor</button></div></div></section>
@@ -94,7 +94,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("click",e=>{if(side.classList.contains("open")&&!e.target.closest("#side")&&!e.target.closest("#menu"))setMenuOpen(false);});
 
-$$("aside nav button").forEach(b=>b.onclick=()=>navigate(b.textContent.trim().includes("Interview")?"Interview Arena":b.textContent.trim().includes("Research")?"Research Lab":b.textContent.trim().includes("Curriculum")?"Curriculum":b.textContent.trim().includes("Mentor")?"Mentor":b.textContent.trim().includes("Projects")?"Projects":b.textContent.trim().includes("Settings")?"Settings":"Overview"));
+$$$("aside nav button").forEach(b=>b.onclick=()=>navigate(b.textContent.trim().includes("Interview")?"Interview Arena":b.textContent.trim().includes("Research")?"Research Lab":b.textContent.trim().includes("Curriculum")?"Curriculum":b.textContent.trim().includes("Mentor")?"Mentor":b.textContent.trim().includes("Projects")?"Projects":b.textContent.trim().includes("Settings")?"Settings":"Overview"));
 document.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openSearch()}if(e.key==="Escape"){closeSearch();setMenuOpen(false)}};
 renderOverview();
 
