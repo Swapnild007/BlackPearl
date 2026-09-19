@@ -52,17 +52,19 @@ if(a==="interview-check"){const v=$("#interviewAnswer")?.value.toLowerCase()||""
 if(a==="settings-theme"){$("#theme")?.click();setTimeout(renderSettings,0)}
 if(a==="reset-progress"){if(confirm("Reset BlackPearl learning progress on this device?")){state={mastery:0,lessonStep:0,answered:false,completed:[]};save();renderSettings()}}}});
 document.addEventListener("click",e=>{const c=e.target.closest("[data-choice]");if(!c)return;$$("[data-choice]").forEach(x=>x.classList.remove("selected"));c.classList.add("selected");const ok=c.dataset.choice==="half";const el=$("#choiceFeedback");if(el)el.innerHTML=`<div class="feedback ${ok?"good":"coach"}">${ok?"Correct. Scalar multiplication scales every component, so [4,6] becomes [2,3].":"Check the operation coordinate by coordinate. What happens to x? What happens to y?"}</div>`;if(ok){state.mastery=Math.min(100,state.mastery+5);state.answered=true;save();setTimeout(()=>{state.lessonStep=2;save();renderLesson()},650)}});
-function setMenuOpen(open){side.classList.toggle("open",open);document.body.classList.toggle("menu-open",open);$("#menu").setAttribute("aria-expanded",String(open));$("#menu").setAttribute("aria-label",open?"Close navigation":"Open navigation");}
-$("#menu").onclick=()=>setMenuOpen(!side.classList.contains("open"));$("#menu").setAttribute("aria-label","Open navigation");
+function setMenuOpen(open){if(!side||!$("#menu"))return;side.classList.toggle("open",open);document.body.classList.toggle("menu-open",open);$("#menu").setAttribute("aria-expanded",String(open));$("#menu").setAttribute("aria-label",open?"Close navigation":"Open navigation");}
+if($("#menu")){$("#menu").onclick=()=>setMenuOpen(!side?.classList.contains("open"));$("#menu").setAttribute("aria-label","Open navigation");}
 
 const savedTheme=localStorage.getItem("blackpearl-theme");if(savedTheme!=="light")document.documentElement.classList.add("dark");
-$("#theme").onclick=()=>{const dark=document.documentElement.classList.toggle("dark");localStorage.setItem("blackpearl-theme",dark?"dark":"light");};
+if($("#theme"))$("#theme").onclick=()=>{const dark=document.documentElement.classList.toggle("dark");localStorage.setItem("blackpearl-theme",dark?"dark":"light");};
 function closeSearch(){
+  if(!modal)return;
   modal.classList.remove("open");
   modal.setAttribute("aria-hidden","true");
   document.body.classList.remove("search-open");
 }
 function openSearch(){
+  if(!modal)return;
   modal.classList.add("open");
   modal.setAttribute("aria-hidden","false");
   document.body.classList.add("search-open");
@@ -76,9 +78,9 @@ function renderSearchResults(query){
   const matches=domains.filter(x=>(x.title+" "+x.domain).toLowerCase().includes(q)).slice(0,8);
   box.innerHTML=matches.length?matches.map(x=>`<button class="search-result" data-search-domain="${x.di}" data-search-topic="${x.ti}"><b>${x.title}</b><small>${x.domain}</small></button>`).join(""):`<div class="search-empty">No matching lesson found. Try attention, backprop, KV cache or optimization.</div>`;
 }
-$("#search").onclick=openSearch;
-$("#close").onclick=closeSearch;
-modal.onclick=e=>{if(e.target===modal)closeSearch()};
+if($("#search"))$("#search").onclick=openSearch;
+if($("#close"))$("#close").onclick=closeSearch;
+if(modal)modal.onclick=e=>{if(e.target===modal)closeSearch()};
 $("#q")?.addEventListener("input",e=>renderSearchResults(e.target.value));
 document.addEventListener("click",e=>{
   const result=e.target.closest("[data-search-domain]");
@@ -95,8 +97,33 @@ document.addEventListener("click",e=>{
 document.addEventListener("click",e=>{if(side.classList.contains("open")&&!e.target.closest("#side")&&!e.target.closest("#menu"))setMenuOpen(false);});
 
 document.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openSearch()}if(e.key==="Escape"){closeSearch();setMenuOpen(false)}};
-renderOverview();
+initReferenceShell();
 
+
+function initReferenceShell(){
+  const overlay=$("#menuOverlay"), open=$("#menuButton"), close=$("#closeButton");
+  const show=()=>{overlay?.classList.add("open");overlay?.setAttribute("aria-hidden","false");open?.setAttribute("aria-expanded","true");document.body.classList.add("locked");setTimeout(()=>close?.focus(),120)};
+  const hide=()=>{overlay?.classList.remove("open");overlay?.setAttribute("aria-hidden","true");open?.setAttribute("aria-expanded","false");document.body.classList.remove("locked");};
+  open?.addEventListener("click",()=>overlay?.classList.contains("open")?hide():show());
+  close?.addEventListener("click",hide);
+  overlay?.addEventListener("click",e=>{if(e.target===overlay)hide()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")hide()});
+  document.addEventListener("click",e=>{
+    const item=e.target.closest("[data-bp-nav]");
+    if(!item)return;
+    e.preventDefault();
+    hide();
+    const target=item.dataset.bpNav;
+    if(target==="overview")renderOverview();
+    else if(target==="curriculum")renderCurriculum(0);
+    else if(target==="mentor")renderMentor();
+    else if(target==="projects")renderProjects();
+    else if(target==="interview")renderInterview();
+    else if(target==="research")renderResearch();
+    else if(target==="settings")renderSettings();
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+}
 // BLACKPEARL CONTENT + MASTERY ENGINE
 const BP_LESSONS={
 "Vectors & Linear Combinations":{domain:"Mathematical Foundations",objective:"Understand vectors as geometric and computational objects and predict the effect of scalar operations.",mental:"A vector can represent a point, a direction, or a compact state. The useful habit is to ask what operation changes and what remains invariant.",predict:"If v = [4,6] and a = 0.5, what should happen?",options:["[4,6]","[2,3]","[8,12]","[0,0]"],answer:1,derive:"a·[x,y] = [ax, ay]",transfer:"Scaling a representation changes magnitude while preserving direction for a positive scalar."},
