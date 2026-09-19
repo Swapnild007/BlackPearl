@@ -50,7 +50,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-action]");
 if(a==="project"){const briefs=["Explore vector geometry through direct manipulation.","Implement reverse-mode autodiff for a tiny computation graph.","Build a minimal Transformer and inspect its attention.","Measure attention cost and identify bottlenecks.","Compare preference optimization objectives on controlled data.","Build a distributed training loop and measure communication."];const i=Number(b.dataset.project||0);const box=document.querySelector(".project-card");alert((briefs[i]||"Project brief")+"\n\nStart with a measurable baseline, implement the mechanism, record evidence, then explain failure modes.");}
 if(a==="interview-check"){const v=$("#interviewAnswer")?.value.toLowerCase()||"";const ok=v.includes("step")||v.includes("gradient")||v.includes("learning rate")||v.includes("update");feedback("#interviewFeedback",ok?"Good. You connected the learning rate to the parameter update mechanism. Push further by explaining overshoot, slow convergence and sensitivity to scale.":"Explain the actual update: parameters move by a gradient multiplied by a step size, so the learning rate sets the magnitude of each update.",ok)}
 if(a==="settings-theme"){$("#theme")?.click();setTimeout(renderSettings,0)}
-if(a==="reset-progress"){if(confirm("Reset BlackPearl learning progress on this device?")){state={mastery:0,lessonStep:0,answered:false,completed:[]};save();renderSettings()}}}});
+if(a==="reset-progress"){if(confirm("Reset BlackPearl learning progress on this device?")){state={mastery:0,lessonStep:0,answered:false,completed:[],math:{lesson:0,step:0,completed:{},mastery:0}};window.state=state;save();renderSettings()}}}});
 document.addEventListener("click",e=>{const c=e.target.closest("[data-choice]");if(!c)return;$$("[data-choice]").forEach(x=>x.classList.remove("selected"));c.classList.add("selected");const ok=c.dataset.choice==="half";const el=$("#choiceFeedback");if(el)el.innerHTML=`<div class="feedback ${ok?"good":"coach"}">${ok?"Correct. Scalar multiplication scales every component, so [4,6] becomes [2,3].":"Check the operation coordinate by coordinate. What happens to x? What happens to y?"}</div>`;if(ok){state.mastery=Math.min(100,state.mastery+5);state.answered=true;save();setTimeout(()=>{state.lessonStep=2;save();renderLesson()},650)}});
 function setMenuOpen(open){if(!side||!$("#menu"))return;side.classList.toggle("open",open);document.body.classList.toggle("menu-open",open);$("#menu").setAttribute("aria-expanded",String(open));$("#menu").setAttribute("aria-label",open?"Close navigation":"Open navigation");}
 if($("#menu")){$("#menu").onclick=()=>setMenuOpen(!side?.classList.contains("open"));$("#menu").setAttribute("aria-label","Open navigation");}
@@ -74,9 +74,9 @@ function renderSearchResults(query){
   const box=$("#searchResults"); if(!box)return;
   const q=String(query||"").trim().toLowerCase();
   if(!q){box.innerHTML="";return;}
-  const domains=(typeof BP_DOMAINS!=="undefined"?BP_DOMAINS:[]).flatMap((d,di)=>d[1].map((title,ti)=>({title,domain:d[0],di,ti})));
-  const matches=domains.filter(x=>(x.title+" "+x.domain).toLowerCase().includes(q)).slice(0,8);
-  box.innerHTML=matches.length?matches.map(x=>`<button class="search-result" data-search-domain="${x.di}" data-search-topic="${x.ti}"><b>${x.title}</b><small>${x.domain}</small></button>`).join(""):`<div class="search-empty">No matching lesson found. Try attention, backprop, KV cache or optimization.</div>`;
+  const domains=(typeof BP_DOMAINS!=="undefined"?BP_DOMAINS:[]).flatMap((d,di)=>d[1].map((title,ti)=>({title,domain:d[0],di,ti}))); const mathMatches=(typeof BP_MATH_LESSONS!=="undefined"?BP_MATH_LESSONS:[]).map((l,mi)=>({title:l.name,domain:l.topic,di:0,ti:mi,math:true}));
+  const matches=domains.concat(mathMatches).filter(x=>(x.title+" "+x.domain).toLowerCase().includes(q)).slice(0,8);
+  box.innerHTML=matches.length?matches.map(x=>`<button class="search-result" data-search-domain="${x.di}" data-search-topic="${x.ti}" data-search-math="${x.math?"1":"0"}"><b>${x.title}</b><small>${x.domain}${x.math?" · Module 01":""}</small></button>`).join(""):`<div class="search-empty">No matching lesson found. Try attention, backprop, KV cache or optimization.</div>`;
 }
 if($("#search"))$("#search").onclick=openSearch;
 if($("#close"))$("#close").onclick=closeSearch;
@@ -89,12 +89,12 @@ document.addEventListener("click",e=>{
     bpCurriculum(Number(result.dataset.searchDomain));
     setActive("Curriculum");
     setTimeout(()=>{
-      const topic=document.querySelector(`[data-bpt="${result.dataset.searchTopic}"]`);
+      const topic=result.dataset.searchMath==="1"?document.querySelector(`[data-math-open="${result.dataset.searchTopic}"]`):document.querySelector(`[data-bpt="${result.dataset.searchTopic}"]`);
       if(topic)topic.click();
     },0);
   }
 });
-document.addEventListener("click",e=>{if(side.classList.contains("open")&&!e.target.closest("#side")&&!e.target.closest("#menu"))setMenuOpen(false);});
+document.addEventListener("click",e=>{if(side?.classList.contains("open")&&!e.target.closest("#side")&&!e.target.closest("#menu"))setMenuOpen(false);});
 
 document.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openSearch()}if(e.key==="Escape"){closeSearch();setMenuOpen(false)}};
 initReferenceShell();
@@ -167,9 +167,10 @@ const BP_DOMAINS=[
 ["Reasoning, Agents & Post-Training",["RL Foundations","Reward Modeling","SFT","Preference Learning","DPO","GRPO","Reasoning Traces","Tool Use","Agent Loops","Evaluation Harnesses"]],
 ["AI Systems, Research & Frontier Engineering",["Profiling","GPU Kernels","Distributed Data Parallel","Tensor Parallelism","Inference Serving","Quantization","Caching","Experiment Design","Ablations","Research Workflow"]]
 ];
-function bpCurriculum(domain=0){const d=BP_DOMAINS[Number(domain)]||BP_DOMAINS[0];main.innerHTML=`<section class="page-head"><small>CURRICULUM ENGINE</small><h1>${d[0]}</h1><p>${"Every concept follows the BlackPearl loop: intuition → prediction → derivation → implementation → debugging → transfer."}</p></section><div class="domain-switch">${BP_DOMAINS.map((x,i)=>`<button class="${i==domain?"selected":""}" data-bpd="${i}">0${i+1} ${x[0]}</button>`).join("")}</div><section class="topic-list">${d[1].map((x,i)=>`<article class="topic-row"><span>${String(i+1).padStart(2,"0")}</span><div><small>LESSON ${i+1}</small><h2>${x}</h2><p>Concept → prediction → derivation → implementation → transfer.</p></div><button class="secondary" data-bpt="${i}">${i?"Open":"Start"} lesson →</button></article>`).join("")}</section>`;}
+function bpCurriculum(domain=0){if(Number(domain)===0&&typeof window.BP_MATH_MODULE==="function"){window.BP_MATH_MODULE();return;}const d=BP_DOMAINS[Number(domain)]||BP_DOMAINS[0];main.innerHTML=`<section class="page-head"><small>CURRICULUM ENGINE</small><h1>${d[0]}</h1><p>${"Every concept follows the BlackPearl loop: intuition → prediction → derivation → implementation → debugging → transfer."}</p></section><div class="domain-switch">${BP_DOMAINS.map((x,i)=>`<button class="${i==domain?"selected":""}" data-bpd="${i}">0${i+1} ${x[0]}</button>`).join("")}</div><section class="topic-list">${d[1].map((x,i)=>`<article class="topic-row"><span>${String(i+1).padStart(2,"0")}</span><div><small>LESSON ${i+1}</small><h2>${x}</h2><p>Concept → prediction → derivation → implementation → transfer.</p></div><button class="secondary" data-bpt="${i}">${i?"Open":"Start"} lesson →</button></article>`).join("")}</section>`;}
 renderCurriculum=bpCurriculum;
 document.addEventListener("click",e=>{const d=e.target.closest("[data-bpd]");if(d)bpCurriculum(d.dataset.bpd);});
+document.addEventListener("click",e=>{const d=e.target.closest("[data-domain-open]");if(d){bpCurriculum(Number(d.dataset.domainOpen));setActive("Curriculum");window.scrollTo({top:0,behavior:"smooth"});}});
 
 
 // BLACKPEARL COMPLETE TOPIC SEEDS
