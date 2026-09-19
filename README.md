@@ -1,35 +1,30 @@
 # AI/ML Command School
 
-An offline-first, self-learning web application for studying the published AI/ML + Generative AI + Agentic AI learning path used as the curriculum reference for this project.
+An independent, offline-first postgraduate-level AI/ML self-learning application.
 
-## What is included
+## Curriculum architecture
 
-- 13 core learning blocks from foundations through capstone
-- Detailed lesson map for every block
-- Original explanatory study material
-- Interactive checkpoints
-- Local progress tracking with `localStorage`
-- Local notes
-- Resume learning
-- Curriculum search
-- Responsive iOS/Apple-inspired interface
-- No backend required
-- No external runtime dependencies
+The application follows the six-layer A→Z curriculum supplied for this project:
 
-## Curriculum reference
+1. Mathematical & Computational Foundations
+2. Core Machine Learning & Statistical Inference
+3. Deep Learning Architectures
+4. Advanced Specializations
+5. Modern Generative AI & Agentic Systems
+6. System Design, Production & MLOps
 
-The curriculum structure is based on the current published Simplilearn/I-DAPT, IIT(BHU) program page:
+It also includes a four-semester academic mapping, a project studio, glossary, topic-level study pages, checkpoints, local notes and local progress.
 
-https://www.simplilearn.com/pgp-generative-ai-machine-learning-agentic-ai
+## Project directions
 
-The application is an independent learning tool. It does **not** represent admission to IIT(BHU), enrollment in the provider program, or an IIT/BHU credential.
+The project studio includes custom autograd/tensor engineering, autonomous perception, medical imaging, speech, streaming fraud detection, enterprise RAG, QLoRA fine-tuning, multi-agent research, controllable diffusion, high-throughput serving, drift/continuous learning and thesis/capstone directions.
+
+## Important distinction
+
+This is a self-learning implementation of a composite postgraduate-level curriculum. It is **not** an official IIT curriculum, IIT admission/enrollment, university degree, transcript, or credential.
 
 ## Run
 
-Open `index.html` directly in a browser, or deploy the repository as a static site on Vercel/GitHub Pages.
+Open index.html directly or deploy the repository as a static site.
 
-## Design principle
-
-Learn -> Build -> Test -> Explain.
-
-Generated code is treated as an object for review and verification, not as automatically correct output.
+No backend or external runtime dependency is required.
