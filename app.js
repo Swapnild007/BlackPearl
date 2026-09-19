@@ -43,22 +43,37 @@ modal.onclick=e=>{if(e.target===modal)modal.classList.remove("open")};
 $$("aside nav button").forEach(b=>b.onclick=()=>navigate(b.textContent.trim().includes("Interview")?"Interview Arena":b.textContent.trim().includes("Research")?"Research Lab":b.textContent.trim().includes("Curriculum")?"Curriculum":b.textContent.trim().includes("Mentor")?"Mentor":b.textContent.trim().includes("Projects")?"Projects":b.textContent.trim().includes("Settings")?"Settings":"Overview"));
 document.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();modal.classList.add("open");$("#q").focus()}if(e.key==="Escape")modal.classList.remove("open")};
 renderOverview();
-// BLACKPEARL LONG-RUN LEARNING EXPANSION
-const BP_DOMAINS=[
-["Mathematical Foundations",["Vectors & Linear Combinations","Matrices & Linear Maps","Eigenvalues & Eigenvectors","Partial Derivatives","Gradients & Jacobians","Probability Distributions","Expectation & Variance","Optimization","Numerical Stability"]],
-["Computer Science & Systems",["Big-O & Cost Models","Data Structures","Recursion & Dynamic Programming","Memory & Processes","Concurrency","Networking","Operating Systems","GPU Architecture","Parallel Thinking"]],
-["Machine Learning & Deep Learning",["Learning Theory","Linear Models","Loss Functions","Gradient Descent","Backpropagation","Regularization","CNNs","RNNs & LSTMs","Training Dynamics"]],
-["Transformers & Foundation Models",["Tokenization","Embeddings","Self-Attention","Multi-Head Attention","Positional Information","Transformer Blocks","Pretraining","Scaling Laws","KV Cache","Evaluation"]],
-["Reasoning, Agents & Post-Training",["RL Foundations","Reward Modeling","SFT","Preference Learning","DPO","GRPO","Reasoning Traces","Tool Use","Agent Loops","Evaluation Harnesses"]],
-["AI Systems, Research & Frontier Engineering",["Profiling","GPU Kernels","Distributed Data Parallel","Tensor Parallelism","Inference Serving","Quantization","Caching","Experiment Design","Ablations","Research Workflow"]]
-];
-const BP_ICONS=["Σ","▱","⌘","◇","♧","⌁"],BP_COLORS=["blue","green","violet","pink","orange","cyan"];
-function bpCurriculum(domain=0){
-const d=BP_DOMAINS[Number(domain)]||BP_DOMAINS[0];
-main.innerHTML=`<section class="page-head"><small>CURRICULUM ENGINE</small><h1>${d[0]}</h1><p>Every concept follows the BlackPearl loop: intuition → prediction → derivation → implementation → debugging → transfer.</p></section><div class="domain-switch">${BP_DOMAINS.map((x,i)=>`<button class="${i==domain?"selected":""}" data-bpd="${i}">0${i+1} ${x[0]}</button>`).join("")}</div><section class="topic-list">${d[1].map((x,i)=>`<article class="topic-row"><span>${String(i+1).padStart(2,"0")}</span><div><small>LESSON ${i+1}</small><h2>${x}</h2><p>Concept → prediction → derivation → implementation → transfer.</p></div><button class="secondary" data-bpt="${i}">Open lesson →</button></article>`).join("")}</section>`;
+
+// BLACKPEARL CONTENT + MASTERY ENGINE
+const BP_LESSONS={
+"Vectors & Linear Combinations":{domain:"Mathematical Foundations",objective:"Understand vectors as geometric and computational objects and predict the effect of scalar operations.",mental:"A vector can represent a point, a direction, or a compact state. The useful habit is to ask what operation changes and what remains invariant.",predict:"If v = [4,6] and a = 0.5, what should happen?",options:["[4,6]","[2,3]","[8,12]","[0,0]"],answer:1,derive:"a·[x,y] = [ax, ay]",transfer:"Scaling a representation changes magnitude while preserving direction for a positive scalar."},
+"Self-Attention":{domain:"Transformers & Foundation Models",objective:"Predict how query-key similarity controls information flow.",mental:"Attention is a content-addressed information routing mechanism. Queries ask what is relevant, keys describe what each token offers, and values carry the information.",predict:"If a query becomes more similar to one key while all other keys remain unchanged, what should happen?",options:["That key receives more attention weight","All weights become zero","The sequence is reversed","Nothing changes"],answer:0,derive:"Attention(Q,K,V)=softmax(QKᵀ/√dₖ)V",transfer:"Changing similarity changes the routing distribution, which changes the mixture of value vectors."},
+"Backpropagation":{domain:"Machine Learning & Deep Learning",objective:"Trace local derivatives backward through a computation graph.",mental:"Backpropagation is repeated application of the chain rule. Each node receives an upstream sensitivity and multiplies it by its local derivative.",predict:"If y=2x and loss L=y², how does dL/dx relate to x?",options:["2x","4x","x²","4"],answer:1,derive:"dL/dx = dL/dy · dy/dx = 2y · 2 = 4x",transfer:"The same local-gradient composition works through deep computational graphs."},
+"KV Cache":{domain:"Transformers & Foundation Models",objective:"Understand why cached keys and values reduce repeated computation during autoregressive decoding.",mental:"During generation, earlier tokens do not change. Their keys and values can therefore be reused instead of recomputed for every new token.",predict:"As a sequence grows, what does KV caching primarily reduce?",options:["Repeated computation for previous tokens","Model parameter count","Vocabulary size","Training data"],answer:0,derive:"Cache K,V for prior positions; compute new K,V only for the newly generated token.",transfer:"Caching is useful whenever an expensive result remains valid across repeated queries."}
+};
+function bpLesson(title){
+const l=BP_LESSONS[title]||BP_LESSONS["Vectors & Linear Combinations"];
+const steps=["Mental Model","Predict","Derive","Implement","Transfer"];
+state.bpLesson={title,step:state.bpLesson?.title===title?state.bpLesson.step:0};save();
+function draw(){
+const s=steps[state.bpLesson.step];
+let body="";
+if(s==="Mental Model")body=`<div class="concept"><h2>Build the mental model.</h2><p>${l.mental}</p><div class="equation">Intuition → mechanism → prediction</div></div><button class="primary lesson-next" data-bpnext>I have the model →</button>`;
+if(s==="Predict")body=`<div class="concept"><h2>Predict before calculating.</h2><p>${l.predict}</p><div class="choice-grid">${l.options.map((x,i)=>`<button data-bpchoice="${i}">${x}</button>`).join("")}</div><div id="bpfeedback"></div></div>`;
+if(s==="Derive")body=`<div class="concept"><h2>Derive the mechanism.</h2><p>Write the relationship in your own notation before checking the reference.</p><div class="equation">${l.derive}</div><textarea id="bpanswer" class="answer area" placeholder="Explain the derivation in your own words..."></textarea><button class="primary" data-bpcheck>Check reasoning →</button><div id="bpfeedback"></div></div>`;
+if(s==="Implement")body=`<div class="concept"><h2>Implementation checkpoint.</h2><p>Describe the smallest implementation that would demonstrate the mechanism.</p><pre class="codebox">function demonstrate(input) {\n  // isolate one mechanism\n  // produce an observable result\n}</pre><textarea id="bpanswer" class="answer area" placeholder="Write pseudocode or implementation reasoning..."></textarea><button class="primary" data-bpcheck>Submit implementation →</button><div id="bpfeedback"></div></div>`;
+if(s==="Transfer")body=`<div class="concept"><h2>Transfer the idea.</h2><p>Where else could the same mechanism appear? Explain the causal connection.</p><textarea id="bpanswer" class="answer area" placeholder="Give an unfamiliar example and explain why the mechanism transfers..."></textarea><button class="primary" data-bpcheck>Submit transfer →</button><div id="bpfeedback"></div></div>`;
+main.innerHTML=`<section class="lesson-shell"><div class="lesson-top"><button class="back" data-action="curriculum">← Curriculum</button><span>${l.domain.toUpperCase()} · ${title.toUpperCase()}</span></div><div class="lesson-progress"><i style="width:${(state.bpLesson.step+1)/steps.length*100}%"></i></div><div class="lesson-grid"><article class="lesson-main"><small>STEP ${state.bpLesson.step+1} OF ${steps.length}</small><h1>${title}</h1><div class="step-pill">${s}</div>${body}</article><aside class="lesson-rail"><small>LEARNING OBJECTIVE</small><p>${l.objective}</p><hr><small>MASTERY SIGNALS</small><ul><li>Prediction before calculation</li><li>Mechanistic explanation</li><li>Independent transfer</li></ul></aside></div></section>`;
 }
-renderCurriculum=bpCurriculum;
+draw();
+}
 document.addEventListener("click",e=>{
-const d=e.target.closest("[data-bpd]");if(d)bpCurriculum(d.dataset.bpd);
-const t=e.target.closest("[data-bpt]");if(t){const title=BP_DOMAINS[Number(document.querySelector("[data-bpd].selected")?.dataset.bpd||0)][1][Number(t.dataset.bpt)];state.selectedLesson=title;save();renderLesson();}
+const t=e.target.closest("[data-bpt]");
+if(t){const active=document.querySelector("[data-bpd].selected");const di=Number(active?.dataset.bpd||0),ti=Number(t.dataset.bpt||0);const title=BP_DOMAINS[di][1][ti];bpLesson(title)}
+const n=e.target.closest("[data-bpnext]");
+if(n){state.bpLesson.step=Math.min(4,(state.bpLesson?.step||0)+1);save();bpLesson(state.bpLesson.title)}
+const c=e.target.closest("[data-bpchoice]");
+if(c){const l=BP_LESSONS[state.bpLesson.title]||BP_LESSONS["Vectors & Linear Combinations"];const ok=Number(c.dataset.bpchoice)===l.answer;$$("[data-bpchoice]").forEach(x=>x.classList.remove("selected"));c.classList.add("selected");const f=$("#bpfeedback");if(f)f.innerHTML=`<div class="feedback ${ok?"good":"coach"}">${ok?"Correct. Now explain why the mechanism produces that result.":"Not yet. Re-read the objects and operation, then predict the measurable effect."}</div>`;if(ok){state.mastery=Math.min(100,(state.mastery||0)+5);state.completed=(state.completed||[]).concat(state.bpLesson.title+":prediction");save();setTimeout(()=>{state.bpLesson.step=2;save();bpLesson(state.bpLesson.title)},550)}}
+const ch=e.target.closest("[data-bpcheck]");
+if(ch){const v=$("#bpanswer")?.value.trim()||"";const ok=v.length>=25;feedback("#bpfeedback",ok?"Good. Your reasoning is now evidence that you can articulate the mechanism.":"Too shallow. State the objects, operation, causal effect and what you would observe.",ok);if(ok){state.mastery=Math.min(100,(state.mastery||0)+5);state.completed=(state.completed||[]).concat(state.bpLesson.title+":"+state.bpLesson.step);save();if(state.bpLesson.step<4)setTimeout(()=>{state.bpLesson.step++;save();bpLesson(state.bpLesson.title)},650)}}
 });
