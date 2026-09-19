@@ -1,7 +1,7 @@
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const main=$("#main"), side=$("#side"), modal=$("#modal");
 const curriculum=[
-{name:"Mathematical Foundations",lessons:84,color:"blue",desc:"Build the mathematical language needed to reason about models, optimization and learning.",first:"Vectors & Linear Combinations"},
+{name:"Mathematical Foundations",lessons:88,color:"blue",desc:"Build the mathematical language needed to reason about models, optimization and learning.",first:"Vectors & Linear Combinations"},
 {name:"Computer Science & Systems",lessons:76,color:"green",desc:"Algorithms, memory, processes, networking and GPU fundamentals.",first:"Big-O and Cost Models"},
 {name:"Machine Learning & Deep Learning",lessons:104,color:"violet",desc:"Statistical learning, neural networks, optimization and representation learning.",first:"What a Model Actually Learns"},
 {name:"Transformers & Foundation Models",lessons:112,color:"pink",desc:"Attention, tokenization, scaling, pretraining, inference and evaluation.",first:"Self-Attention"},
